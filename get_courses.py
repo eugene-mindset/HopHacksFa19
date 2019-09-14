@@ -1,8 +1,8 @@
 import json
 import requests
 from pprint import pprint
+from auth import api_key
 
-api_key = '8p4Wk8y5gUYk3LJDqxMIdll2MLkxM7DW'
 whiting = 'Whiting School of Engineering'
 krieger = 'Krieger School of Arts and Sciences'
 semesters = ['Fall 2019', 'Spring 2019', 'Fall 2018', 'Spring 2018', 'Fall 2017', 'Spring 2017', 'Fall 2016']
