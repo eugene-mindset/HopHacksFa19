@@ -1,0 +1,37 @@
+/** Print Stylesheet for JHU Self-Service **/
+#frameworkcontrols{
+	display:none;
+	visibility:hidden;
+	height:0px;
+}
+#frameworkheading{
+	display:none;
+	visibility:hidden;
+	height:0px;
+}
+.noprint, .navbar{
+	display:none;
+	visibility:hidden;
+	height:0px;
+}
+.breadcrumb{
+	padding-top: 3px;
+	padding-right: 15px;
+	padding-bottom: 3px;
+	padding-left: 15px;
+	font-size: 12px;
+	margin-bottom: 7px;
+	border-bottom-color: #cccccc;
+	border-bottom-width: thin;
+	border-bottom-style: solid;
+	list-style-type: none;
+	list-style-position: outside;
+	list-style-image: none;
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	border-bottom-left-radius: 4px;
+	background-color: rgb(245, 245, 245);
+}
+.breadcrumb > li {
+	display: inline-block;
+}

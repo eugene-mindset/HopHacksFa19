@@ -1,0 +1,1991 @@
+<!DOCTYPE html>
+<!-- saved from url=(0081)https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209 -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>
+	Johns Hopkins University - SIS - My Grades
+</title>
+    <link href="./sisgrades_files/MatrixSS.css" type="text/css" rel="stylesheet">
+    <script async="" src="./sisgrades_files/analytics.js.download"></script><script type="text/javascript" src="./sisgrades_files/prototype.js.download"></script>
+    <script type="text/javascript" src="./sisgrades_files/scriptaculous.js.download"></script><script type="text/javascript" src="./sisgrades_files/builder.js.download"></script><script type="text/javascript" src="./sisgrades_files/effects.js.download"></script><script type="text/javascript" src="./sisgrades_files/dragdrop.js.download"></script><script type="text/javascript" src="./sisgrades_files/controls.js.download"></script><script type="text/javascript" src="./sisgrades_files/slider.js.download"></script><script type="text/javascript" src="./sisgrades_files/sound.js.download"></script>
+    <script type="text/javascript" src="./sisgrades_files/JSS_Controls.js.download"></script>
+    <script type="text/javascript" src="./sisgrades_files/jquery-1.9.1.min.js.download"></script>
+    <script type="text/javascript">
+        function initPage() {
+            var oForm = document.forms[0];
+            try {
+                oForm.elements["cboPersonTST"].focus();
+            }
+            catch (ex) { }
+        }
+
+        function ClearAP() {
+            var oForm = document.forms[0]
+        }
+        function getInitialValue(obj) {
+            var oForm = document.forms[0]
+            gInitValue = getItemValue(obj)
+        }
+        function setInitialValue(obj, IDObj) {
+            var oForm = document.forms[0]
+            if (gInitValue != oForm.elements[obj].value) {
+                setItemValue(obj, "")
+                setItemValue(IDObj, "")
+            }
+        }
+        function getItemValue(item) {
+            var oForm = document.forms[0]
+            return oForm.elements[item].value;
+        }
+        function setItemValue(item, val) {
+            var oForm = document.forms[0]
+            oForm.elements[item].value = val;
+        }
+
+
+        function openContactInfo(strURL) {
+            window.open(strURL, 'ContactInfo', 'width=790,height=700,top=60,left=150,scrollbars=yes,resizable=yes');
+        }
+
+        function showClassDetails(control, id) {
+            var row = control;
+            var cnt = 0; // loop protection if DOM is confused
+            while (cnt++ < 100 && row.tagName.toUpperCase() != "TR") {
+                row = row.parentNode;
+            }
+            var column_count = row.getElementsByTagName("TD").length;
+
+            if (!jQuery(row).prop("DetailsRowAdded")) {
+                jQuery("<tr style='display: none'></tr>").insertAfter(jQuery(row));
+                jQuery(row).prop("DetailsRowAdded", 1);
+            }
+
+            var nextrow = row.nextSibling;
+            cnt = 0;
+            while (nextrow.tagName == null || nextrow.tagName.toUpperCase() != "TR")
+                nextrow = nextrow.nextSibling;
+
+            if (nextrow.style.display == "none") {
+                var url = "../SearchForClasses/ClassDetails.aspx";
+                var myup = $(control.parentNode);
+                var mycn = myup.className;
+                myup.className = "icon-ajax-16-right";
+                new Ajax.Request(url, {
+                    method: "get",
+                    parameters: { "id": id },
+                    requestHeaders: { "If-Modified-Since": "Thu, 1 Jan 1970 00:00:00 GMT" },
+                    onSuccess: function (transport) {
+                        try {
+                            nextrow.style.display = "";
+                            var divname = "details_" + id;
+                            var content = "<div style=\"display:none;\" class='label'  id=\"" + divname + "\">" + transport.responseText + "</div>";
+                            if (nextrow.cells.length == 0) {
+                                var newCell = nextrow.insertCell(0);
+                                newCell.colSpan = column_count;
+                                newCell.innerHTML = content;
+                                jQuery(newCell).addClass("class-details-cell");
+                            }
+                            else {
+                                nextrow.cells[0].innerHTML = content;
+                            }
+
+                            control.innerHTML = control.innerHTML.replace("[+]", "[-]");
+                            new Effect.SlideDown(
+                                divname,
+                                {
+                                    duration: .5
+                                }
+
+                            );
+                            jQuery(nextrow.cells[0]).find('#tblGeneralInfo').removeAttr('style');
+                            jQuery(nextrow.cells[0]).find('#tblGeneralInfo').addClass('label');
+
+                        } catch (ex) { alert(ex.message); }
+                    },
+                    onComplete: function (transport) {
+                        myup.className = mycn;
+                    },
+                    onError: function (err) { alert(err.message); }
+                });
+
+            }
+            else {
+                nextrow.style.display = "none";
+                control.innerHTML = control.innerHTML.replace("[-]", "[+]");
+            }
+        }
+
+        function showSectionTermDescription(SSS_SectionsID) {
+            var url = "../ViewGradesByClass/SSS_ViewGradesByClass.aspx";
+            var myel = $("section-" + SSS_SectionsID);
+            var myup = $(myel.parentNode);
+            var mycn = myup.className;
+            new Ajax.Request(url, {
+                method: "get",
+                parameters: { "sssSectionID": SSS_SectionsID },
+                onSuccess: function (transport) {
+                    showWin({
+                        title: "Section Details",
+                        content: transport.responseText,
+                        width: 600,
+                        offsetElement: myel,
+                        offsetCorner: { x: "left", y: "bottom" }
+                    });
+                },
+                onComplete: function (transport) {
+                    myup.className = mycn;
+                }
+            });
+            myup.className = "icon-ajax-16-right";
+        }
+
+        function showGradeSystemDescription(SSS_SectionsID, text) {
+            var myel = $("section-" + SSS_SectionsID + "-gradesystem");
+            showWin({
+                title: "Grade System Details",
+                content: "<table><tr><td class='label'>" + (text || "") + "</td></tr></table>",
+                width: 200,
+                offsetElement: myel,
+                offsetCorner: { x: "left", y: "bottom" }
+            });
+        }
+
+        function showGradeDescription(SSS_SectionsID, text) {
+            var myel = $("section-" + SSS_SectionsID + "-gradedescription");
+            showWin({
+                title: "Grade Description",
+                content: "<table><tr><td class='label'>" + (text || "") + "</td></tr></table>",
+                width: 200,
+                offsetElement: myel,
+                offsetCorner: { x: "left", y: "bottom" }
+            });
+        }
+
+        function showGradeExpiration(SSS_SectionsID) {
+            var myel = $("section-" + SSS_SectionsID + "-gradeexpiration");
+            showWin({
+                title: "Grade Expiration",
+                content: "<table><tr><td class='label'>The listed grade will expire on this date. A grade that is allowed to expire may adversely affect your academic record. Prior to the expiration date, you should consult your divisional registrar for the school's policy on expired grades and how it may affect your record.</td></tr></table>",
+                width: 200,
+                offsetElement: myel,
+                offsetCorner: { x: "left", y: "bottom" }
+            });
+        }
+
+        function showGradeReportLinksDisabledMessage(el, message) {
+            showWin({
+                title: "Why Are Links Disabled",
+                content: message,
+                width: 400,
+                offsetElement: el,
+                offsetCorner: { x: "left", y: "bottom" }
+            });
+        }
+
+        function showGradeDisabledMessage(SSS_SectionsID, message) {
+            var myel = $("section-" + SSS_SectionsID + "-gradehidden");
+            showWin({
+                title: "Why Is My Grade Disabled",
+                content: message,
+                width: 400,
+                offsetElement: myel,
+                offsetCorner: { x: "left", y: "bottom" }
+            });
+        }
+
+
+        function showGradeReport(term) {
+            var url = '../SSS_AddDropClasses/EnrollmentConfirmation.aspx?term=' + term;
+            url += "&grades=true";
+            if (term > 0) {
+                window.open(url, 'PrintPage', 'width=790,height=700,top=60,left=150,scrollbars=yes,resizable=yes');
+            }
+        }
+    </script>
+
+    <script type="text/javascript">
+        (function (i, s, o, g, r, a, m) {i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {(i[r].q = i[r].q || []).push(arguments)}, i[r].l = 1 * new Date(); a = s.createElement(o),m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)})(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+ga('create', 'UA-31185806-2', 'auto');
+ga('set', 'dimension1', 'win/aadon1');
+ga('set', 'dimension2', 'Generic - ASEN UGrad');
+ga('set', 'dimension3', '3');
+ga('send', 'pageview');
+    </script>
+</head>
+<body>
+    <script type="text/javascript">
+        function getServerElementClientId(id) {
+            var hiddenId = 'ctl00_contentPlaceHolder_hiddenIdHelper';
+            var contentPhId = hiddenId.replace("hiddenIdHelper", "");
+            return contentPhId + id;
+        }
+
+        function getServerElementById(id) {
+            var realId = getServerElementClientId(id);
+            return document.getElementById(realId);
+        }
+    </script>
+    <form method="post" action="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209" id="aspnetForm">
+<div class="aspNetHidden">
+<input type="hidden" name="SSS_StudentInstanceID" id="SSS_StudentInstanceID" value="276300">
+<input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="">
+<input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="">
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="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">
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+var theForm = document.forms['aspnetForm'];
+if (!theForm) {
+    theForm = document.aspnetForm;
+}
+function __doPostBack(eventTarget, eventArgument) {
+    if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+        theForm.__EVENTTARGET.value = eventTarget;
+        theForm.__EVENTARGUMENT.value = eventArgument;
+        theForm.submit();
+    }
+}
+//]]>
+</script>
+
+
+<div class="aspNetHidden">
+
+	<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="AF24AD35">
+</div>
+		<div style="padding: 0 4px 0 4px;">
+			
+
+<link href="./sisgrades_files/default.css" rel="stylesheet" type="text/css">
+<link href="./sisgrades_files/alert.css" rel="stylesheet" type="text/css">
+<link href="./sisgrades_files/lighting.css" rel="stylesheet" type="text/css">
+<link href="./sisgrades_files/print.css" type="text/css" rel="stylesheet" media="print">
+<link href="./sisgrades_files/MatrixSS(1).css" type="text/css" rel="stylesheet">
+<link href="./sisgrades_files/bootstrap.css" type="text/css" rel="stylesheet" media="screen">
+<link href="./sisgrades_files/font-awesome.css" type="text/css" rel="stylesheet">
+<link href="./sisgrades_files/bootstrapmod.css" type="text/css" rel="stylesheet">
+
+<link rel="stylesheet" type="text/css" href="./sisgrades_files/jquery-ui.css">
+<script type="text/javascript" src="./sisgrades_files/jquery-1.8.2.min.js.download"></script>
+<script type="text/javascript" src="./sisgrades_files/jquery-ui-1.8.24.min.js.download"></script>
+<script type="text/javascript" src="./sisgrades_files/bootstrap.js.download"></script>
+<script type="text/javascript" src="./sisgrades_files/twitter-bootstrap-hover-dropdown.min.js.download"></script>
+<script type="text/javascript" src="./sisgrades_files/html5shiv.js.download"></script>
+<script type="text/javascript" src="./sisgrades_files/respond.min.js.download"></script>
+
+<script language="javascript" src="./sisgrades_files/js.aspx"></script><script type="text/javascript" src="./sisgrades_files/builder.js.download"></script><script type="text/javascript" src="./sisgrades_files/effects.js.download"></script><script type="text/javascript" src="./sisgrades_files/dragdrop.js.download"></script><script type="text/javascript" src="./sisgrades_files/controls.js.download"></script><script type="text/javascript" src="./sisgrades_files/slider.js.download"></script><script type="text/javascript" src="./sisgrades_files/sound.js.download"></script>
+
+
+<script language="javascript" type="text/javascript">
+
+    var timeoutid;
+
+    function sessionTimeout() {
+        var sessionAskTimeoutExpression = "1030000";
+        var sessionAskTimeoutValue = "3";
+
+        window.setTimeout(function () { askTimeout(sessionAskTimeoutValue); }, sessionAskTimeoutExpression);
+        timeoutid = window.setTimeout("window.location.href='../../Framework/JHU_Framework/Logout.aspx'", "1210000");
+    }
+
+</script>
+
+<nav class="navbar navbar-default" style="background-color: white; border: 0; margin-bottom: 0;">
+    <div class="container-fluid">
+
+
+
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#topNav" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <span class="navbar-brand" href="#" style="padding: 10px 10px;">
+                <img src="./sisgrades_files/SISv3h2.png" alt="Johns Hopkins University"></span>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse pull-right" id="topNav">
+            <div class="pull-right" style="margin-top: 3px;">
+                <span id="ctl00_JHU_AlertsMenuControl_UserName" class="UserName">&nbsp;Welcome, Anderson!</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <span id="ctl00_JHU_AlertsMenuControl_lblIDHeader" class="UserName">Hopkins ID:</span>
+                <span id="ctl00_JHU_AlertsMenuControl_lblIDValue" class="label-zeroStrkeThrough">4E9AF9</span>
+            </div>
+            <div style="margin-top: 25px;">
+                
+
+                        <span id="ctl00_JHU_AlertsMenuControl_rptPersonFunctions_ctl00_lblPersonFunction" class="PersonFunction">Student:</span>&nbsp;
+                        
+                        
+
+                        <select name="ctl00$JHU_AlertsMenuControl$rptPersonFunctions$ctl00$ddlStudentPrograms" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;ctl00$JHU_AlertsMenuControl$rptPersonFunctions$ctl00$ddlStudentPrograms\&#39;,\&#39;\&#39;)&#39;, 0)" id="ctl00_JHU_AlertsMenuControl_rptPersonFunctions_ctl00_ddlStudentPrograms" disabled="disabled" class="aspNetDisabled PersonFunction">
+	<option selected="selected" value="5.812278">ASEN - Ugrad / Bachelors</option>
+
+</select>
+                        
+                        
+                        
+
+                    
+                <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" id="multirecords" style="visibility: hidden; display: none; font-size: 10px; font-weight: 700;" onclick="showMultipleInstancesWindow(true)">multiple records exist</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+
+
+
+
+
+			
+    
+<script language="javascript">
+
+    jQuery.noConflict();
+    
+    function showWhyDisabled(control){
+        var message = 'Menu item(s) will be disabled when there is no information available for your particular student record in that area.<br><br> If you have questions about this, please <a target=new href=/sswf/help/CMNWeb/custom/DisplayHelpContacts.aspx class=labelInfoNew>contact your school</a>.<BR><BR/> ';
+        showWin({
+            title: "Information",
+            content: message,
+            width: 350,
+            top: 0,
+            left:-365,
+            offsetElement: control,
+            offsetCorner: { x: "right", y: "bottom" }
+        });
+
+    }
+
+    function getContactInfo(zoneName, appName, contactType) {
+        var url, control;
+        if (contactType == "phone") {
+            url = '../../Help/CMNWeb/Custom/phonePopup.aspx?zoneName=' + zoneName + '&appName=' + appName;
+            control = jQuery('#contact_phone');
+        }
+        else if (contactType == "email") {
+            url = '../../Help/CMNWeb/Custom/emailPopup.aspx?zoneName=' + zoneName + '&appName=' + appName;
+            control = jQuery('#contact_email');
+        }
+        var mycn = control.children(0).attr('class');
+
+        control.children(0).addClass('fa-spinner'); //we are selecting the ahref's <i> elemement
+
+        //control.className = "icon-spinner"; //"label-spinner"; //
+        new Ajax.Request(url, {
+            method: "get",
+            onSuccess: function (transport) {
+                showWin({
+                    title: "Contact Information",
+                    content: transport.responseText,
+                    width: 240,
+                    top: 0,
+                    left: -255,
+                    offsetElement: control.attr('id'),
+                    offsetCorner: { x: "right", y: "bottom" }
+                });
+            },
+            onComplete: function (transport) {
+                control.children(0).removeClass('fa-spinner');
+                control.children(0).addClass(mycn);
+            }
+        });
+    }
+
+    jQuery(document).ready(function () {
+
+        if (jQuery('.navbar').is(":visible")) {
+            //do this work only when the navbar is visible, somtimes it is hidden
+            jQuery('#link_setttingsPopover').popover({
+                //customize the popover
+                container: 'body',
+                html: true,
+                title: '<strong>Set Your Landing Page</strong>',
+                content: 'Users with multiple SIS roles can now set which role loads first after login. Simply click the <i class="fa fa-cog fa-fw fa-sm"></i> menu item above and set yours.<div style="margin-top: 7px;"><button onclick="closeAndSaveCogPopover();" class="btn btn-primary btn-sm cancel" >Okay, I got it</button></div>'
+            }).on('hidden.bs.popover', function () { //important hack for jquery and prototypeJS fighting, this "reshows" the popover's parent element after buggie popover.hide() hides it
+                jQuery(this).show();
+            });
+
+            jQuery('#link_setttingsPopover').popover('show'); //show the popover on doc.ready
+        }
+    });
+
+    //called from cog's popover Okay btn, function call setup in doc.ready
+    function closeAndSaveCogPopover() {
+        jQuery('#link_setttingsPopover').popover('hide');              //hide the popover
+        jQuery.ajax({                                           //don't show the popover again
+            url: '../../Framework/JHU_Framework/PersonalPreferenceSetter.ashx',
+            type: 'GET',
+            data: {
+                prefName: "ShowSwitchDefaultRolePopover",
+                prefValue: "N"                                 //no way for this to NOT be N
+            }
+        });
+    }
+
+</script>
+
+<!-- a little style snippet to keep the popover's title from wrapping with our custom x close. This will effect all popups. -->
+<style>
+    .popover {
+         max-width: 500px;
+         width: auto;
+    }
+</style>
+
+<center>
+    
+    
+</center>
+    
+    <nav class="navbar navbar-custom" role="navigation"><div class="navbar-collapse"><ul class="nav navbar-nav navbar-left"><li class="dropdown"><a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown">Registration<b class="caret"></b></a><ul class="dropdown-menu"><li><a href="https://sis.jhu.edu/sswf/SSS/MyAcademicProgram/SSS_MyAcademicProgram.aspx?MyIndex=88195" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">Program of Study Info</a></li><li><a href="https://sis.jhu.edu/sswf/SSS/SearchForClasses/SSS_SearchForClasses.aspx?MyIndex=91499" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">Class Search</a></li><li><a href="https://sis.jhu.edu/sswf/SSS/EnrollmentCart/SSS_EnrollmentCart.aspx?MyIndex=88199" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">My Cart</a></li><li><a href="https://sis.jhu.edu/sswf/SSS/SSS_AddDropClasses/SSS_AddDropClasses.aspx?MyIndex=88203" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">Add/Drop Classes</a></li><li><a href="https://sis.jhu.edu/sswf/SSS/MyWaitlistClasses/SSS_StudentWaitListClasses.aspx?MyIndex=88208" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">My Pending Enrollment Requests</a></li><li><a href="https://sis.jhu.edu/sswf/SSS/EntityClassSchedule/SSS_EntityClassSchedule.aspx?MyIndex=88204" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">My Class Schedule</a></li><li class="active"><a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">My Grades</a></li><li><a target="_blank" href="https://sis.jhu.edu/sswf/SSS/MyAcademicProgram/DegreeAudit.aspx?MyIndex=128415" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">Degree Audit</a></li><li><a href="https://sis.jhu.edu/sswf/CMN/DivisionContent/RegistrationOnlineForms.aspx?MyIndex=143436" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">Online Forms</a></li><li><a href="https://sis.jhu.edu/sswf/SSS/ClearingHouse/Default.aspx?MyIndex=128554" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">Enrollment Certifications<br>Transcript</a></li><li><a href="https://sis.jhu.edu/sswf/CMN/JHU_MenuWebControl/RedirectToCeDiploma.aspx?MyIndex=140575" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">CeDiploma</a></li></ul></li><li class="dropdown"><a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown">Financial Aid<b class="caret"></b></a><ul class="dropdown-menu"><li><a href="https://sis.jhu.edu/sswf/PF/ISIStoNP/Main.aspx?MyIndex=88212" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">View Financial Aid</a></li><li><a href="https://sis.jhu.edu/sswf/CMN/DivisionContent/FinancialAidOnlineForms.aspx?MyIndex=144115" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">Online Forms</a></li><li><a href="https://sis.jhu.edu/sswf/PF/FinancialAid/FWSReports.aspx?MyIndex=140939" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">Federal Work Study Authorization Form</a></li></ul></li><li class="dropdown"><a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown">Billing<b class="caret"></b></a><ul class="dropdown-menu"><li><a href="https://sis.jhu.edu/sswf/SBS/AccountSummary/overview.aspx?MyIndex=88221" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">Summary</a></li><li><a href="https://sis.jhu.edu/sswf/SBS/AccountSummary/DueDatesAnnouncements.aspx?MyIndex=144812" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">Due Dates/Announcements</a></li><li><a href="https://sis.jhu.edu/sswf/SBS/AuthorizedPayer/ManagePayers.aspx?MyIndex=88222" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">Authorized Users</a></li><li><a href="https://sis.jhu.edu/sswf/sbs/ThirdPartyBilling/SponsorInfo.aspx?MyIndex=143795" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">Third Party Payers</a></li></ul></li><li class="dropdown"><a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown">Personal Info<b class="caret"></b></a><ul class="dropdown-menu"><li><a href="https://sis.jhu.edu/sswf/CMN/JHU_PersonsSummary/JHU_PersonsSummary.aspx?MyIndex=140347" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">Summary</a></li><li><a href="https://sis.jhu.edu/sswf/CMN/JHU_PersonsSummary/FerpaSummary.aspx?MyIndex=132047" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">FERPA Summary</a></li><li><a href="https://sis.jhu.edu/sswf/CMN/PersonalInfo/CMN_PersonEmergencyContact.aspx?MyIndex=88227" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">Emergency Contact</a></li><li><a href="https://sis.jhu.edu/sswf/CMN/JHU_FamilyInfo/JHUFamilyInfoDisplay.aspx?MyIndex=96244" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">Family Info</a></li><li><a href="https://sis.jhu.edu/sswf/CMN/MessageBoard/JHU_CMN_MessageBoard.aspx?MyIndex=96245" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">Announcements</a></li><li><a href="https://sis.jhu.edu/sswf/SBS/AuthorizedPayer/ManagePayers.aspx?MyIndex=115706" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">Authorized Users</a></li><li><a href="https://sis.jhu.edu/sswf/CMN/PendingNotifications/PendingNotifications.aspx?MyIndex=135691" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">Notifications</a></li><li><a href="https://sis.jhu.edu/sswf/JCard/JCardManagement/JCardMain.aspx?MyIndex=140497" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">My J-Card</a></li><li><a href="https://sis.jhu.edu/sswf/SSS/HandshakeConsent/Default.aspx?MyIndex=144153" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">Handshake Consent</a></li><li><a href="https://sis.jhu.edu/sswf/SSS/HealthInsurance/HealthDentalVisionInsuranceStart.aspx?MyIndex=144850" onclick="document.getElementById(&#39;ProgressIndicator&#39;).style.visibility=&#39;visible&#39;;">Student Insurance Benefits</a></li></ul></li></ul>
+    <ul id="ctl00_JHU_MenuControl_ulMenuRight" class="nav navbar-nav navbar-right">     
+		 <!-- this will output an <li> from the code behind -->
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<li><a href="javascript:showHelp(&#39;https://uis.jhu.edu/sis-help-for-students/my-grades/&#39;)"><i class="fa fa-question-circle fa-fw fa-inverse" title="help"></i> help</a></li>
+    <li>
+        <a href="https://sis.jhu.edu/sswf/CMN/JHU_MenuWebControl/#" id="ctl00_JHU_MenuControl_jhu_GiveFeedback_ShowButton" onclick="jhu_GiveFeedback_ShowButton_Click();return false;"><i class="fa fa-comment fa-fw fa-flip-horizontal fa-inverse"></i>feedback</a>
+    </li>
+    <li>
+        <a href="https://sis.jhu.edu/sswf/SYS/Password/SYS_ChangePassword.aspx" id="ctl00_JHU_MenuControl_link_password" target="_blank"><i class="fa fa-lock fa-fw fa-inverse"></i>password</a>
+    </li>
+    <li>
+        <a href="https://sis.jhu.edu/sswf/Framework/JHU_Framework/Logout.aspx" id="link_logout" style="margin-right: 5px;"><i class="fa fa-power-off fa-fw fa-inverse"></i>logout</a>
+    </li>
+    <li>
+        
+        
+            <a href="https://sis.jhu.edu/sswf/Framework/JHU_Framework/PersonalSettings.aspx" id="link_setttingsNoPopover" style="margin-right: 5px;" data-placement="bottom"><i class="fa fa-cog fa-fw fa-lg fa-inverse"></i></a>
+        
+    </li>
+</ul>
+
+</div></nav>
+
+<ol class="breadcrumb noprint"><li><a href="https://sis.jhu.edu/sswf/CMN/MessageBoard/JHU_CMN_MessageBoard.aspx?MyIndex=96245" style=""><i class="fa fa-home fa-fw fa-lg"></i> Home</a></li><li class="active"><span class="breadCrumbDevider">/</span>Registration</li><li class="active"><span class="breadCrumbDevider">/</span>My Grades</li><li style="float:right;"><a id="contact_email" href="javascript:getContactInfo(&#39;ASEN - UG&#39;, &#39;SSS&#39;,&#39;email&#39;);"><i class="fa fa-envelope fa-fw"></i> email</a></li><li style="float:right;"><a id="contact_phone" href="javascript:getContactInfo(&#39;ASEN - UG&#39;, &#39;SSS&#39;,&#39;phone&#39;);"><i class="fa fa-phone fa-fw"></i> phone</a><span class="breadCrumbDevider">|</span></li><li style="float:right; padding-right:10px;"><strong>Contact Us: </strong></li></ol>
+
+
+<div id="jhu_GiveFeedback_ShowButtonContainer"></div>
+
+ 
+               
+
+
+
+
+
+			
+			
+    <script type="text/javascript">
+        window.onload = function () {
+            initPage();
+        }
+    </script>
+    
+    
+        <div class="box-border" style="width: 400px; margin-top: 15px;">
+            <h3 class="box-border-title">
+                &nbsp;</h3>
+            <div class="inner-box">
+                <div style="margin-bottom: 5px;">
+                    <span id="ctl00_contentPlaceHolder_valStudentName" class="LabelInfo">Adon, Anderson Antonio</span></div>
+                <div style="margin-bottom: 5px;">
+                    <a id="ctl00_contentPlaceHolder_lbTranscript" class="label" href="javascript:__doPostBack(&#39;ctl00$contentPlaceHolder$lbTranscript&#39;,&#39;&#39;)"><strong>[View Unofficial Transcript]</strong></a>
+                    &nbsp;&nbsp;
+                </div>
+                <div id="ctl00_contentPlaceHolder_pnlFreshmenGradeReport">
+	
+                    
+                
+</div><label for="ctl00_contentPlaceHolder_cboAcademicPeriod" id="ctl00_contentPlaceHolder_LabelAcademicPeriod" style="width:120px;">Academic Period: </label><select name="ctl00$contentPlaceHolder$cboAcademicPeriod" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;ctl00$contentPlaceHolder$cboAcademicPeriod\&#39;,\&#39;\&#39;)&#39;, 0)" id="ctl00_contentPlaceHolder_cboAcademicPeriod" disabled="disabled" class="aspNetDisabled" style="width:200px;">
+	<option selected="selected" value="0">All</option>
+	<option value="1175">Fall 2019</option>
+	<option value="1426">Spring 2019</option>
+	<option value="1425">Intersession 2019</option>
+	<option value="1027">Fall 2018</option>
+	<option value="1344">Spring 2018</option>
+	<option value="1343">Intersession 2018</option>
+	<option value="1026">Fall 2017</option>
+
+</select>
+            </div>
+        </div>
+        <input id="Hidden_nTermsID" type="hidden" name="Hidden1">
+        <input id="Hidden_strTypeSubtype" type="hidden" name="Hidden2">
+        <input id="hidden_nInstanceID" type="hidden">
+        <table width="99%">
+            <tbody><tr>
+                <td>
+                    
+                </td>
+            </tr>
+            <tr id="ctl00_contentPlaceHolder_trJHUResidencyCredits">
+	<td>
+                    <table>
+                        <tbody><tr>
+                            <td colspan="2" nowrap="">
+                                <span class="label" style="font-weight:bold;">JHU Credits in Residency Applied: </span>
+                                <span id="ctl00_contentPlaceHolder_JHUResidencyCredits" class="label" style="display:inline-block;width:100%;">75.00</span>
+                            </td>
+                        </tr>
+                    </tbody></table>
+                    <br>
+                </td>
+</tr>
+
+            <tr>
+                <td width="100%">
+                    
+                            <br>
+                            <table cellspacing="0" cellpadding="0" width="95%">
+                                <tbody><tr width="100%">
+                                    <td class="label">
+                                        <div id="acedemicePeriod" class="sectionHeader">
+                                            <table width="98%">
+                                                <tbody><tr>
+                                                    <td class="subHeader">
+                                                        <span>Academic Period: </span>
+                                                        <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl00_TermName">Fall 2019</span>
+                                                    </td>
+                                                    
+                                                </tr>
+                                            </tbody></table>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td width="100%">
+                                        
+                                        <div id="ctl00_contentPlaceHolder_RPStudentGrades_ctl00_pnlCourseData">
+	
+                                            <table cellspacing="0" rules="all" border="1" id="ctl00_contentPlaceHolder_RPStudentGrades_ctl00_DGStudentGrades" style="width:100%;border-collapse:collapse;">
+		<tbody><tr class="tableHeader" align="center">
+			<th class="tableHeader" align="center" scope="col">Course Number (Section)</th><th class="tableHeader" align="center" scope="col">Class Title</th><th class="tableHeader" align="center" scope="col">Writing<br>Intensive</th><th class="tableHeader" align="center" scope="col">Area</th><th class="tableHeader" align="center" scope="col">Grade</th><th class="tableHeader" align="center" scope="col">Grade System</th><th class="tableHeader" scope="col">Attempted Credits</th><th class="tableHeader" scope="col">Earned Credits</th>
+		</tr><tr class="tableRowOddData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-596261" href="javascript:showSectionTermDescription(596261)">
+                                                                    EN.553.361(05)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,596261);return false;">Intro to Optimization [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">EQ</td><td class="label" align="left" style="width:15%;"><input style="background-color: #a1c5e5; color: #205081;" id="newGradeInput0" type="text" name="ChangedGrade" placeholder="Change Me!"></td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-596261-gradesystem" href="javascript:showGradeSystemDescription(596261, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">4.00</td><td class="label" align="right" style="width:13%;">0.00</td>
+		</tr><tr class="tableRowEvenData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-596264" href="javascript:showSectionTermDescription(596264)">
+                                                                    EN.553.385(01)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,596264);return false;">Scientific Computing: Linear Algebra [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">EQ</td><td class="label" align="left" style="width:15%;"><input style="background-color: #a1c5e5; color: #205081;" id="newGradeInput1" type="text" name="ChangedGrade" placeholder="Change Me!"></td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-596264-gradesystem" href="javascript:showGradeSystemDescription(596264, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">4.00</td><td class="label" align="right" style="width:13%;">0.00</td>
+		</tr><tr class="tableRowOddData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-620387" href="javascript:showSectionTermDescription(620387)">
+                                                                    EN.553.430(03)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,620387);return false;">Introduction to Statistics [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">EQ</td><td class="label" align="left" style="width:15%;"><input style="background-color: #a1c5e5; color: #205081;" id="newGradeInput2" type="text" name="ChangedGrade" placeholder="Change Me!"></td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-620387-gradesystem" href="javascript:showGradeSystemDescription(620387, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">4.00</td><td class="label" align="right" style="width:13%;">0.00</td>
+		</tr><tr class="tableRowEvenData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-597921" href="javascript:showSectionTermDescription(597921)">
+                                                                    EN.601.464(01)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,597921);return false;">Artificial Intelligence [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">E</td><td class="label" align="left" style="width:15%;"><input style="background-color: #a1c5e5; color: #205081;" id="newGradeInput3" type="text" name="ChangedGrade" placeholder="Change Me!"></td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-597921-gradesystem" href="javascript:showGradeSystemDescription(597921, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">3.00</td><td class="label" align="right" style="width:13%;">0.00</td>
+		</tr><tr class="tableRowOddData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-597935" href="javascript:showSectionTermDescription(597935)">
+                                                                    EN.660.400(06)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,597935);return false;">Practical Ethics for Future Leaders [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">H</td><td class="label" align="left" style="width:15%;"><input style="background-color: #a1c5e5; color: #205081;" id="newGradeInput4" type="text" name="ChangedGrade" placeholder="Change Me!"></td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-597935-gradesystem" href="javascript:showGradeSystemDescription(597935, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">2.00</td><td class="label" align="right" style="width:13%;">0.00</td>
+		</tr><tr class="tableRowEvenData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-597947" href="javascript:showSectionTermDescription(597947)">
+                                                                    EN.660.406(06)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,597947);return false;">Practical Ethics for Future Leaders - Special Topic [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">H</td><td class="label" align="left" style="width:15%;"><input style="background-color: #a1c5e5; color: #205081;" id="newGradeInput5" type="text" name="ChangedGrade" placeholder="Change Me!"></td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-597947-gradesystem" href="javascript:showGradeSystemDescription(597947, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">1.00</td><td class="label" align="right" style="width:13%;">0.00</td>
+		</tr>
+	</tbody></table>
+                                        
+</div>
+                                    </td>
+                                </tr>
+                            </tbody></table>
+                            <!-- removed border style from next two tables -- style="border:1px solid;border-collapse:collapse" -->
+                            <!-- removed border style from all rows, next two tables -- style="border:1px solid;border-color:LightGrey" -->
+                            <!-- removed border style from cells for next two tables -- style="border:0.02cm outset;border-color:LightGrey" -->
+                            <!-- removed bgcolors --- bgcolor="#ffffcc" bordercolor="LightGrey" -->
+                            <div id="ctl00_contentPlaceHolder_RPStudentGrades_ctl00_pnlGradeCummData">
+	
+                                <table id="ctl00_contentPlaceHolder_RPStudentGrades_ctl00_ApCumGPA" cellspacing="0" width="95%" border="0">
+		<tbody><tr>
+			<td width="17%">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl00_LabelAPGPA" class="label" style="font-weight:bold;">Term GPA :</span>
+                                        </td>
+			<td width="30%" align="left">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl00_APGPA" class="label" style="font-weight:bold;">NA</span>
+                                        </td>
+			<td width="27%" align="right" colspan="2" nowrap="nowrap">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl00_Label9" class="label" style="font-weight:bold;">Totals:</span>
+                                        </td>
+			<td width="13%" align="right" nowrap="nowrap">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl00_AttemptedCredits" class="label" style="display:inline-block;font-weight:bold;width:100%;">18.00</span>
+                                        </td>
+			<td width="13%" align="right" nowrap="nowrap">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl00_EarnedCredits" class="label" style="display:inline-block;font-weight:bold;width:100%;">0.00</span>
+                                        </td>
+		</tr>
+		<tr>
+			<td>
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl00_LabelCumulativeGPA" class="label" style="font-weight:bold;">Cumulative GPA: </span>
+                                        </td>
+			<td align="left">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl00_valCumulativeGPA" class="label" style="font-weight:bold;">3.70</span>
+                                        </td>
+			<td align="right" colspan="2">
+                                            
+                                        </td>
+			<td align="right" colspan="2">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl00_valCumulativeEarnedCredits" class="label" style="font-weight:bold;"></span>
+                                        </td>
+		</tr>
+		<tr>
+			<td colspan="6">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl00_Label1" class="label">
+												        <em>Note: Cumulative totals are as of this academic period.</em></span>
+                                        </td>
+		</tr>
+	</tbody></table>
+	
+                            
+</div>
+                            <br>
+                        
+                            <br>
+                            <table cellspacing="0" cellpadding="0" width="95%">
+                                <tbody><tr width="100%">
+                                    <td class="label">
+                                        <div id="acedemicePeriod" class="sectionHeader">
+                                            <table width="98%">
+                                                <tbody><tr>
+                                                    <td class="subHeader">
+                                                        <span>Academic Period: </span>
+                                                        <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl01_TermName">Spring 2019</span>
+                                                    </td>
+                                                    
+                                                </tr>
+                                            </tbody></table>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td width="100%">
+                                        
+                                        <div id="ctl00_contentPlaceHolder_RPStudentGrades_ctl01_pnlCourseData">
+	
+                                            <table cellspacing="0" rules="all" border="1" id="ctl00_contentPlaceHolder_RPStudentGrades_ctl01_DGStudentGrades" style="width:100%;border-collapse:collapse;">
+		<tbody><tr class="tableHeader" align="center">
+			<th class="tableHeader" align="center" scope="col">Course Number (Section)</th><th class="tableHeader" align="center" scope="col">Class Title</th><th class="tableHeader" align="center" scope="col">Writing<br>Intensive</th><th class="tableHeader" align="center" scope="col">Area</th><th class="tableHeader" align="center" scope="col">Grade</th><th class="tableHeader" align="center" scope="col">Grade System</th><th class="tableHeader" scope="col">Attempted Credits</th><th class="tableHeader" scope="col">Earned Credits</th>
+		</tr><tr class="tableRowOddData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-580451" href="javascript:showSectionTermDescription(580451)">
+                                                                    AS.200.141(01)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,580451);return false;">Foundations of Brain, Behavior and Cognition [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">NS</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            A
+                                                            
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-580451-gradesystem" href="javascript:showGradeSystemDescription(580451, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">3.00</td><td class="label" align="right" style="width:13%;">3.00</td>
+		</tr><tr class="tableRowEvenData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-582132" href="javascript:showSectionTermDescription(582132)">
+                                                                    EN.553.420(01)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,582132);return false;">Introduction to Probability [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">EQ</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            A
+                                                            
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-582132-gradesystem" href="javascript:showGradeSystemDescription(582132, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">4.00</td><td class="label" align="right" style="width:13%;">4.00</td>
+		</tr><tr class="tableRowOddData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-583040" href="javascript:showSectionTermDescription(583040)">
+                                                                    EN.601.231(01)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,583040);return false;">Automata &amp; Computation Theory [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">EQ</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            A-
+                                                            
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-583040-gradesystem" href="javascript:showGradeSystemDescription(583040, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">3.00</td><td class="label" align="right" style="width:13%;">3.00</td>
+		</tr><tr class="tableRowEvenData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-583041" href="javascript:showSectionTermDescription(583041)">
+                                                                    EN.601.290(01)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,583041);return false;">User Interfaces and Mobile Applications [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">E</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            A
+                                                            
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-583041-gradesystem" href="javascript:showGradeSystemDescription(583041, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">3.00</td><td class="label" align="right" style="width:13%;">3.00</td>
+		</tr><tr class="tableRowOddData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-583037" href="javascript:showSectionTermDescription(583037)">
+                                                                    EN.601.433(01)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,583037);return false;">Intro Algorithms [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">EQ</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            B
+                                                            
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-583037-gradesystem" href="javascript:showGradeSystemDescription(583037, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">3.00</td><td class="label" align="right" style="width:13%;">3.00</td>
+		</tr>
+	</tbody></table>
+                                        
+</div>
+                                    </td>
+                                </tr>
+                            </tbody></table>
+                            <!-- removed border style from next two tables -- style="border:1px solid;border-collapse:collapse" -->
+                            <!-- removed border style from all rows, next two tables -- style="border:1px solid;border-color:LightGrey" -->
+                            <!-- removed border style from cells for next two tables -- style="border:0.02cm outset;border-color:LightGrey" -->
+                            <!-- removed bgcolors --- bgcolor="#ffffcc" bordercolor="LightGrey" -->
+                            <div id="ctl00_contentPlaceHolder_RPStudentGrades_ctl01_pnlGradeCummData">
+	
+                                <table id="ctl00_contentPlaceHolder_RPStudentGrades_ctl01_ApCumGPA" cellspacing="0" width="95%" border="0">
+		<tbody><tr>
+			<td width="17%">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl01_LabelAPGPA" class="label" style="font-weight:bold;">Term GPA :</span>
+                                        </td>
+			<td width="30%" align="left">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl01_APGPA" class="label" style="font-weight:bold;">3.76</span>
+                                        </td>
+			<td width="27%" align="right" colspan="2" nowrap="nowrap">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl01_Label9" class="label" style="font-weight:bold;">Totals:</span>
+                                        </td>
+			<td width="13%" align="right" nowrap="nowrap">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl01_AttemptedCredits" class="label" style="display:inline-block;font-weight:bold;width:100%;">16.00</span>
+                                        </td>
+			<td width="13%" align="right" nowrap="nowrap">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl01_EarnedCredits" class="label" style="display:inline-block;font-weight:bold;width:100%;">16.00</span>
+                                        </td>
+		</tr>
+		<tr>
+			<td>
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl01_LabelCumulativeGPA" class="label" style="font-weight:bold;">Cumulative GPA: </span>
+                                        </td>
+			<td align="left">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl01_valCumulativeGPA" class="label" style="font-weight:bold;">3.70</span>
+                                        </td>
+			<td align="right" colspan="2">
+                                            
+                                        </td>
+			<td align="right" colspan="2">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl01_valCumulativeEarnedCredits" class="label" style="font-weight:bold;"></span>
+                                        </td>
+		</tr>
+		<tr>
+			<td colspan="6">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl01_Label1" class="label">
+												        <em>Note: Cumulative totals are as of this academic period.</em></span>
+                                        </td>
+		</tr>
+	</tbody></table>
+	
+                            
+</div>
+                            <br>
+                        
+                            <br>
+                            <table cellspacing="0" cellpadding="0" width="95%">
+                                <tbody><tr width="100%">
+                                    <td class="label">
+                                        <div id="acedemicePeriod" class="sectionHeader">
+                                            <table width="98%">
+                                                <tbody><tr>
+                                                    <td class="subHeader">
+                                                        <span>Academic Period: </span>
+                                                        <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl02_TermName">Intersession 2019</span>
+                                                    </td>
+                                                    
+                                                </tr>
+                                            </tbody></table>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td width="100%">
+                                        
+                                        <div id="ctl00_contentPlaceHolder_RPStudentGrades_ctl02_pnlCourseData">
+	
+                                            <table cellspacing="0" rules="all" border="1" id="ctl00_contentPlaceHolder_RPStudentGrades_ctl02_DGStudentGrades" style="width:100%;border-collapse:collapse;">
+		<tbody><tr class="tableHeader" align="center">
+			<th class="tableHeader" align="center" scope="col">Course Number (Section)</th><th class="tableHeader" align="center" scope="col">Class Title</th><th class="tableHeader" align="center" scope="col">Writing<br>Intensive</th><th class="tableHeader" align="center" scope="col">Area</th><th class="tableHeader" align="center" scope="col">Grade</th><th class="tableHeader" align="center" scope="col">Grade System</th><th class="tableHeader" scope="col">Attempted Credits</th><th class="tableHeader" scope="col">Earned Credits</th>
+		</tr><tr class="tableRowOddData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-588341" href="javascript:showSectionTermDescription(588341)">
+                                                                    EN.601.147(13)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,588341);return false;">What's in a Mutt: An Intro to Dog DNA Analysis [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">&nbsp;</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            S
+                                                            
+                                                                <span class="icon-none-16-right"><a class="linkDescriptor" id="section-588341-gradedescription" href="javascript:showGradeDescription(588341, &#39;Satisfactory completion&#39;)">
+                                                                    [what's this?] </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-588341-gradesystem" href="javascript:showGradeSystemDescription(588341, &#39;Grade system used for courses which require grading of either Satisfactory or Unsatisfactory performance.&#39;)">
+                                                                    Undergrad S/U
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">1.00</td><td class="label" align="right" style="width:13%;">1.00</td>
+		</tr>
+	</tbody></table>
+                                        
+</div>
+                                    </td>
+                                </tr>
+                            </tbody></table>
+                            <!-- removed border style from next two tables -- style="border:1px solid;border-collapse:collapse" -->
+                            <!-- removed border style from all rows, next two tables -- style="border:1px solid;border-color:LightGrey" -->
+                            <!-- removed border style from cells for next two tables -- style="border:0.02cm outset;border-color:LightGrey" -->
+                            <!-- removed bgcolors --- bgcolor="#ffffcc" bordercolor="LightGrey" -->
+                            <div id="ctl00_contentPlaceHolder_RPStudentGrades_ctl02_pnlGradeCummData">
+	
+                                <table id="ctl00_contentPlaceHolder_RPStudentGrades_ctl02_ApCumGPA" cellspacing="0" width="95%" border="0">
+		<tbody><tr>
+			<td width="17%">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl02_LabelAPGPA" class="label" style="font-weight:bold;">Term GPA :</span>
+                                        </td>
+			<td width="30%" align="left">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl02_APGPA" class="label" style="font-weight:bold;">0.00</span>
+                                        </td>
+			<td width="27%" align="right" colspan="2" nowrap="nowrap">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl02_Label9" class="label" style="font-weight:bold;">Totals:</span>
+                                        </td>
+			<td width="13%" align="right" nowrap="nowrap">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl02_AttemptedCredits" class="label" style="display:inline-block;font-weight:bold;width:100%;">1.00</span>
+                                        </td>
+			<td width="13%" align="right" nowrap="nowrap">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl02_EarnedCredits" class="label" style="display:inline-block;font-weight:bold;width:100%;">1.00</span>
+                                        </td>
+		</tr>
+		<tr>
+			<td>
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl02_LabelCumulativeGPA" class="label" style="font-weight:bold;">Cumulative GPA: </span>
+                                        </td>
+			<td align="left">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl02_valCumulativeGPA" class="label" style="font-weight:bold;">3.69</span>
+                                        </td>
+			<td align="right" colspan="2">
+                                            
+                                        </td>
+			<td align="right" colspan="2">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl02_valCumulativeEarnedCredits" class="label" style="font-weight:bold;"></span>
+                                        </td>
+		</tr>
+		<tr>
+			<td colspan="6">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl02_Label1" class="label">
+												        <em>Note: Cumulative totals are as of this academic period.</em></span>
+                                        </td>
+		</tr>
+	</tbody></table>
+	
+                            
+</div>
+                            <br>
+                        
+                            <br>
+                            <table cellspacing="0" cellpadding="0" width="95%">
+                                <tbody><tr width="100%">
+                                    <td class="label">
+                                        <div id="acedemicePeriod" class="sectionHeader">
+                                            <table width="98%">
+                                                <tbody><tr>
+                                                    <td class="subHeader">
+                                                        <span>Academic Period: </span>
+                                                        <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl03_TermName">Fall 2018</span>
+                                                    </td>
+                                                    
+                                                </tr>
+                                            </tbody></table>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td width="100%">
+                                        
+                                        <div id="ctl00_contentPlaceHolder_RPStudentGrades_ctl03_pnlCourseData">
+	
+                                            <table cellspacing="0" rules="all" border="1" id="ctl00_contentPlaceHolder_RPStudentGrades_ctl03_DGStudentGrades" style="width:100%;border-collapse:collapse;">
+		<tbody><tr class="tableHeader" align="center">
+			<th class="tableHeader" align="center" scope="col">Course Number (Section)</th><th class="tableHeader" align="center" scope="col">Class Title</th><th class="tableHeader" align="center" scope="col">Writing<br>Intensive</th><th class="tableHeader" align="center" scope="col">Area</th><th class="tableHeader" align="center" scope="col">Grade</th><th class="tableHeader" align="center" scope="col">Grade System</th><th class="tableHeader" scope="col">Attempted Credits</th><th class="tableHeader" scope="col">Earned Credits</th>
+		</tr><tr class="tableRowOddData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-561095" href="javascript:showSectionTermDescription(561095)">
+                                                                    AS.200.101(01)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,561095);return false;">Introduction to Psychology [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">NS</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            A-
+                                                            
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-561095-gradesystem" href="javascript:showGradeSystemDescription(561095, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">3.00</td><td class="label" align="right" style="width:13%;">3.00</td>
+		</tr><tr class="tableRowEvenData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-561498" href="javascript:showSectionTermDescription(561498)">
+                                                                    AS.200.133(01)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,561498);return false;">Introduction to Social Psychology [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">S</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            B+
+                                                            
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-561498-gradesystem" href="javascript:showGradeSystemDescription(561498, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">3.00</td><td class="label" align="right" style="width:13%;">3.00</td>
+		</tr><tr class="tableRowOddData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-562992" href="javascript:showSectionTermDescription(562992)">
+                                                                    EN.553.171(03)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,562992);return false;">Discrete Mathematics [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">Q</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            B+
+                                                            
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-562992-gradesystem" href="javascript:showGradeSystemDescription(562992, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">4.00</td><td class="label" align="right" style="width:13%;">4.00</td>
+		</tr><tr class="tableRowEvenData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-562997" href="javascript:showSectionTermDescription(562997)">
+                                                                    EN.553.291(02)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,562997);return false;">Linear Algebra and Differential Equations [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">EQ</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            A
+                                                            
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-562997-gradesystem" href="javascript:showGradeSystemDescription(562997, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">4.00</td><td class="label" align="right" style="width:13%;">4.00</td>
+		</tr><tr class="tableRowOddData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-563975" href="javascript:showSectionTermDescription(563975)">
+                                                                    EN.601.226(01)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,563975);return false;">Data Structures [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">EQ</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            A
+                                                            
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-563975-gradesystem" href="javascript:showGradeSystemDescription(563975, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">4.00</td><td class="label" align="right" style="width:13%;">4.00</td>
+		</tr>
+	</tbody></table>
+                                        
+</div>
+                                    </td>
+                                </tr>
+                            </tbody></table>
+                            <!-- removed border style from next two tables -- style="border:1px solid;border-collapse:collapse" -->
+                            <!-- removed border style from all rows, next two tables -- style="border:1px solid;border-color:LightGrey" -->
+                            <!-- removed border style from cells for next two tables -- style="border:0.02cm outset;border-color:LightGrey" -->
+                            <!-- removed bgcolors --- bgcolor="#ffffcc" bordercolor="LightGrey" -->
+                            <div id="ctl00_contentPlaceHolder_RPStudentGrades_ctl03_pnlGradeCummData">
+	
+                                <table id="ctl00_contentPlaceHolder_RPStudentGrades_ctl03_ApCumGPA" cellspacing="0" width="95%" border="0">
+		<tbody><tr>
+			<td width="17%">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl03_LabelAPGPA" class="label" style="font-weight:bold;">Term GPA :</span>
+                                        </td>
+			<td width="30%" align="left">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl03_APGPA" class="label" style="font-weight:bold;">3.68</span>
+                                        </td>
+			<td width="27%" align="right" colspan="2" nowrap="nowrap">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl03_Label9" class="label" style="font-weight:bold;">Totals:</span>
+                                        </td>
+			<td width="13%" align="right" nowrap="nowrap">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl03_AttemptedCredits" class="label" style="display:inline-block;font-weight:bold;width:100%;">18.00</span>
+                                        </td>
+			<td width="13%" align="right" nowrap="nowrap">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl03_EarnedCredits" class="label" style="display:inline-block;font-weight:bold;width:100%;">18.00</span>
+                                        </td>
+		</tr>
+		<tr>
+			<td>
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl03_LabelCumulativeGPA" class="label" style="font-weight:bold;">Cumulative GPA: </span>
+                                        </td>
+			<td align="left">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl03_valCumulativeGPA" class="label" style="font-weight:bold;">3.69</span>
+                                        </td>
+			<td align="right" colspan="2">
+                                            
+                                        </td>
+			<td align="right" colspan="2">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl03_valCumulativeEarnedCredits" class="label" style="font-weight:bold;"></span>
+                                        </td>
+		</tr>
+		<tr>
+			<td colspan="6">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl03_Label1" class="label">
+												        <em>Note: Cumulative totals are as of this academic period.</em></span>
+                                        </td>
+		</tr>
+	</tbody></table>
+	
+                            
+</div>
+                            <br>
+                        
+                            <br>
+                            <table cellspacing="0" cellpadding="0" width="95%">
+                                <tbody><tr width="100%">
+                                    <td class="label">
+                                        <div id="acedemicePeriod" class="sectionHeader">
+                                            <table width="98%">
+                                                <tbody><tr>
+                                                    <td class="subHeader">
+                                                        <span>Academic Period: </span>
+                                                        <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl04_TermName">Spring 2018</span>
+                                                    </td>
+                                                    
+                                                </tr>
+                                            </tbody></table>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td width="100%">
+                                        
+                                        <div id="ctl00_contentPlaceHolder_RPStudentGrades_ctl04_pnlCourseData">
+	
+                                            <table cellspacing="0" rules="all" border="1" id="ctl00_contentPlaceHolder_RPStudentGrades_ctl04_DGStudentGrades" style="width:100%;border-collapse:collapse;">
+		<tbody><tr class="tableHeader" align="center">
+			<th class="tableHeader" align="center" scope="col">Course Number (Section)</th><th class="tableHeader" align="center" scope="col">Class Title</th><th class="tableHeader" align="center" scope="col">Writing<br>Intensive</th><th class="tableHeader" align="center" scope="col">Area</th><th class="tableHeader" align="center" scope="col">Grade</th><th class="tableHeader" align="center" scope="col">Grade System</th><th class="tableHeader" scope="col">Attempted Credits</th><th class="tableHeader" scope="col">Earned Credits</th>
+		</tr><tr class="tableRowOddData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-542468" href="javascript:showSectionTermDescription(542468)">
+                                                                    AS.110.109(02)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,542468);return false;">Calculus II (For Physical Sciences and Engineering) [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">Q</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            B
+                                                            
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-542468-gradesystem" href="javascript:showGradeSystemDescription(542468, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">4.00</td><td class="label" align="right" style="width:13%;">4.00</td>
+		</tr><tr class="tableRowEvenData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-543089" href="javascript:showSectionTermDescription(543089)">
+                                                                    AS.171.102(03)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,543089);return false;">General Physics: Physical Science Majors II [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">EN</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            A-
+                                                            
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-543089-gradesystem" href="javascript:showGradeSystemDescription(543089, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">4.00</td><td class="label" align="right" style="width:13%;">4.00</td>
+		</tr><tr class="tableRowOddData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-543211" href="javascript:showSectionTermDescription(543211)">
+                                                                    AS.173.112(10)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,543211);return false;">General Physics Laboratory II [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">N</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            A-
+                                                            
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-543211-gradesystem" href="javascript:showGradeSystemDescription(543211, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">1.00</td><td class="label" align="right" style="width:13%;">1.00</td>
+		</tr><tr class="tableRowEvenData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-546068" href="javascript:showSectionTermDescription(546068)">
+                                                                    EN.520.123(01)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,546068);return false;">Computational Modeling for Electrical and Computer Engineering [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">E</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            A+
+                                                            
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-546068-gradesystem" href="javascript:showGradeSystemDescription(546068, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">3.00</td><td class="label" align="right" style="width:13%;">3.00</td>
+		</tr><tr class="tableRowOddData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-545033" href="javascript:showSectionTermDescription(545033)">
+                                                                    EN.520.142(01)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,545033);return false;">Digital Systems Fundamentals [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">EQ</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            A+
+                                                            
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-545033-gradesystem" href="javascript:showGradeSystemDescription(545033, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">3.00</td><td class="label" align="right" style="width:13%;">3.00</td>
+		</tr><tr class="tableRowEvenData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-546178" href="javascript:showSectionTermDescription(546178)">
+                                                                    EN.601.220(01)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,546178);return false;">Intermediate Programming [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">E</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            A-
+                                                            
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-546178-gradesystem" href="javascript:showGradeSystemDescription(546178, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">4.00</td><td class="label" align="right" style="width:13%;">4.00</td>
+		</tr>
+	</tbody></table>
+                                        
+</div>
+                                    </td>
+                                </tr>
+                            </tbody></table>
+                            <!-- removed border style from next two tables -- style="border:1px solid;border-collapse:collapse" -->
+                            <!-- removed border style from all rows, next two tables -- style="border:1px solid;border-color:LightGrey" -->
+                            <!-- removed border style from cells for next two tables -- style="border:0.02cm outset;border-color:LightGrey" -->
+                            <!-- removed bgcolors --- bgcolor="#ffffcc" bordercolor="LightGrey" -->
+                            <div id="ctl00_contentPlaceHolder_RPStudentGrades_ctl04_pnlGradeCummData">
+	
+                                <table id="ctl00_contentPlaceHolder_RPStudentGrades_ctl04_ApCumGPA" cellspacing="0" width="95%" border="0">
+		<tbody><tr>
+			<td width="17%">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl04_LabelAPGPA" class="label" style="font-weight:bold;">Term GPA :</span>
+                                        </td>
+			<td width="30%" align="left">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl04_APGPA" class="label" style="font-weight:bold;">3.65</span>
+                                        </td>
+			<td width="27%" align="right" colspan="2" nowrap="nowrap">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl04_Label9" class="label" style="font-weight:bold;">Totals:</span>
+                                        </td>
+			<td width="13%" align="right" nowrap="nowrap">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl04_AttemptedCredits" class="label" style="display:inline-block;font-weight:bold;width:100%;">19.00</span>
+                                        </td>
+			<td width="13%" align="right" nowrap="nowrap">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl04_EarnedCredits" class="label" style="display:inline-block;font-weight:bold;width:100%;">19.00</span>
+                                        </td>
+		</tr>
+		<tr>
+			<td>
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl04_LabelCumulativeGPA" class="label" style="font-weight:bold;">Cumulative GPA: </span>
+                                        </td>
+			<td align="left">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl04_valCumulativeGPA" class="label" style="font-weight:bold;">3.69</span>
+                                        </td>
+			<td align="right" colspan="2">
+                                            
+                                        </td>
+			<td align="right" colspan="2">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl04_valCumulativeEarnedCredits" class="label" style="font-weight:bold;"></span>
+                                        </td>
+		</tr>
+		<tr>
+			<td colspan="6">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl04_Label1" class="label">
+												        <em>Note: Cumulative totals are as of this academic period.</em></span>
+                                        </td>
+		</tr>
+	</tbody></table>
+	
+                            
+</div>
+                            <br>
+                        
+                            <br>
+                            <table cellspacing="0" cellpadding="0" width="95%">
+                                <tbody><tr width="100%">
+                                    <td class="label">
+                                        <div id="acedemicePeriod" class="sectionHeader">
+                                            <table width="98%">
+                                                <tbody><tr>
+                                                    <td class="subHeader">
+                                                        <span>Academic Period: </span>
+                                                        <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl05_TermName">Intersession 2018</span>
+                                                    </td>
+                                                    
+                                                </tr>
+                                            </tbody></table>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td width="100%">
+                                        
+                                        <div id="ctl00_contentPlaceHolder_RPStudentGrades_ctl05_pnlCourseData">
+	
+                                            <table cellspacing="0" rules="all" border="1" id="ctl00_contentPlaceHolder_RPStudentGrades_ctl05_DGStudentGrades" style="width:100%;border-collapse:collapse;">
+		<tbody><tr class="tableHeader" align="center">
+			<th class="tableHeader" align="center" scope="col">Course Number (Section)</th><th class="tableHeader" align="center" scope="col">Class Title</th><th class="tableHeader" align="center" scope="col">Writing<br>Intensive</th><th class="tableHeader" align="center" scope="col">Area</th><th class="tableHeader" align="center" scope="col">Grade</th><th class="tableHeader" align="center" scope="col">Grade System</th><th class="tableHeader" scope="col">Attempted Credits</th><th class="tableHeader" scope="col">Earned Credits</th>
+		</tr><tr class="tableRowOddData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-547616" href="javascript:showSectionTermDescription(547616)">
+                                                                    EN.510.105(13)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,547616);return false;">Chocolate: An Introduction to Materials Science [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">EN</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            S
+                                                            
+                                                                <span class="icon-none-16-right"><a class="linkDescriptor" id="section-547616-gradedescription" href="javascript:showGradeDescription(547616, &#39;Satisfactory completion&#39;)">
+                                                                    [what's this?] </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-547616-gradesystem" href="javascript:showGradeSystemDescription(547616, &#39;Grade system used for courses which require grading of either Satisfactory or Unsatisfactory performance.&#39;)">
+                                                                    Undergrad S/U
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">1.00</td><td class="label" align="right" style="width:13%;">1.00</td>
+		</tr><tr class="tableRowEvenData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-551989" href="javascript:showSectionTermDescription(551989)">
+                                                                    EN.520.113(13)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,551989);return false;">Raspberry Pi DIY [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">E</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            S
+                                                            
+                                                                <span class="icon-none-16-right"><a class="linkDescriptor" id="section-551989-gradedescription" href="javascript:showGradeDescription(551989, &#39;Satisfactory completion&#39;)">
+                                                                    [what's this?] </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-551989-gradesystem" href="javascript:showGradeSystemDescription(551989, &#39;Grade system used for courses which require grading of either Satisfactory or Unsatisfactory performance.&#39;)">
+                                                                    Undergrad S/U
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">1.00</td><td class="label" align="right" style="width:13%;">1.00</td>
+		</tr><tr class="tableRowOddData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-552211" href="javascript:showSectionTermDescription(552211)">
+                                                                    EN.553.282(14)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,552211);return false;">A Hands-On Introduction to MATLAB [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">Q</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            S
+                                                            
+                                                                <span class="icon-none-16-right"><a class="linkDescriptor" id="section-552211-gradedescription" href="javascript:showGradeDescription(552211, &#39;Satisfactory completion&#39;)">
+                                                                    [what's this?] </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-552211-gradesystem" href="javascript:showGradeSystemDescription(552211, &#39;Grade system used for courses which require grading of either Satisfactory or Unsatisfactory performance.&#39;)">
+                                                                    Undergrad S/U
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">1.00</td><td class="label" align="right" style="width:13%;">1.00</td>
+		</tr>
+	</tbody></table>
+                                        
+</div>
+                                    </td>
+                                </tr>
+                            </tbody></table>
+                            <!-- removed border style from next two tables -- style="border:1px solid;border-collapse:collapse" -->
+                            <!-- removed border style from all rows, next two tables -- style="border:1px solid;border-color:LightGrey" -->
+                            <!-- removed border style from cells for next two tables -- style="border:0.02cm outset;border-color:LightGrey" -->
+                            <!-- removed bgcolors --- bgcolor="#ffffcc" bordercolor="LightGrey" -->
+                            <div id="ctl00_contentPlaceHolder_RPStudentGrades_ctl05_pnlGradeCummData">
+	
+                                <table id="ctl00_contentPlaceHolder_RPStudentGrades_ctl05_ApCumGPA" cellspacing="0" width="95%" border="0">
+		<tbody><tr>
+			<td width="17%">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl05_LabelAPGPA" class="label" style="font-weight:bold;">Term GPA :</span>
+                                        </td>
+			<td width="30%" align="left">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl05_APGPA" class="label" style="font-weight:bold;">0.00</span>
+                                        </td>
+			<td width="27%" align="right" colspan="2" nowrap="nowrap">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl05_Label9" class="label" style="font-weight:bold;">Totals:</span>
+                                        </td>
+			<td width="13%" align="right" nowrap="nowrap">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl05_AttemptedCredits" class="label" style="display:inline-block;font-weight:bold;width:100%;">3.00</span>
+                                        </td>
+			<td width="13%" align="right" nowrap="nowrap">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl05_EarnedCredits" class="label" style="display:inline-block;font-weight:bold;width:100%;">3.00</span>
+                                        </td>
+		</tr>
+		<tr>
+			<td>
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl05_LabelCumulativeGPA" class="label" style="font-weight:bold;">Cumulative GPA: </span>
+                                        </td>
+			<td align="left">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl05_valCumulativeGPA" class="label" style="font-weight:bold;">3.74</span>
+                                        </td>
+			<td align="right" colspan="2">
+                                            
+                                        </td>
+			<td align="right" colspan="2">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl05_valCumulativeEarnedCredits" class="label" style="font-weight:bold;"></span>
+                                        </td>
+		</tr>
+		<tr>
+			<td colspan="6">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl05_Label1" class="label">
+												        <em>Note: Cumulative totals are as of this academic period.</em></span>
+                                        </td>
+		</tr>
+	</tbody></table>
+	
+                            
+</div>
+                            <br>
+                        
+                            <br>
+                            <table cellspacing="0" cellpadding="0" width="95%">
+                                <tbody><tr width="100%">
+                                    <td class="label">
+                                        <div id="acedemicePeriod" class="sectionHeader">
+                                            <table width="98%">
+                                                <tbody><tr>
+                                                    <td class="subHeader">
+                                                        <span>Academic Period: </span>
+                                                        <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl06_TermName">Fall 2017</span>
+                                                    </td>
+                                                    
+                                                </tr>
+                                            </tbody></table>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td width="100%">
+                                        
+                                        <div id="ctl00_contentPlaceHolder_RPStudentGrades_ctl06_pnlCourseData">
+	
+                                            <table cellspacing="0" rules="all" border="1" id="ctl00_contentPlaceHolder_RPStudentGrades_ctl06_DGStudentGrades" style="width:100%;border-collapse:collapse;">
+		<tbody><tr class="tableHeader" align="center">
+			<th class="tableHeader" align="center" scope="col">Course Number (Section)</th><th class="tableHeader" align="center" scope="col">Class Title</th><th class="tableHeader" align="center" scope="col">Writing<br>Intensive</th><th class="tableHeader" align="center" scope="col">Area</th><th class="tableHeader" align="center" scope="col">Grade</th><th class="tableHeader" align="center" scope="col">Grade System</th><th class="tableHeader" scope="col">Attempted Credits</th><th class="tableHeader" scope="col">Earned Credits</th>
+		</tr><tr class="tableRowOddData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-541293" href="javascript:showSectionTermDescription(541293)">
+                                                                    AS.060.113(09)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,541293);return false;">Expository Writing: Politics and Violence [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">Y</td><td class="label" align="center" style="width:3%;">H</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            A-
+                                                            
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-541293-gradesystem" href="javascript:showGradeSystemDescription(541293, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">3.00</td><td class="label" align="right" style="width:13%;">3.00</td>
+		</tr><tr class="tableRowEvenData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-525319" href="javascript:showSectionTermDescription(525319)">
+                                                                    AS.110.108(02)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,525319);return false;">Calculus I [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">Q</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            A
+                                                            
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-525319-gradesystem" href="javascript:showGradeSystemDescription(525319, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">4.00</td><td class="label" align="right" style="width:13%;">4.00</td>
+		</tr><tr class="tableRowOddData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-525532" href="javascript:showSectionTermDescription(525532)">
+                                                                    AS.171.101(07)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,525532);return false;">General Physics:Physical Science Major I [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">EN</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            B+
+                                                            
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-525532-gradesystem" href="javascript:showGradeSystemDescription(525532, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">4.00</td><td class="label" align="right" style="width:13%;">4.00</td>
+		</tr><tr class="tableRowEvenData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-525515" href="javascript:showSectionTermDescription(525515)">
+                                                                    AS.173.111(20)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,525515);return false;">General Physics Laboratory I [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">N</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            A
+                                                            
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-525515-gradesystem" href="javascript:showGradeSystemDescription(525515, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">1.00</td><td class="label" align="right" style="width:13%;">1.00</td>
+		</tr><tr class="tableRowOddData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-527533" href="javascript:showSectionTermDescription(527533)">
+                                                                    EN.520.137(01)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,527533);return false;">Introduction To Electrical &amp; Computer Engineering [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">EQ</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            A-
+                                                            
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-527533-gradesystem" href="javascript:showGradeSystemDescription(527533, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">3.00</td><td class="label" align="right" style="width:13%;">3.00</td>
+		</tr><tr class="tableRowEvenData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:17%;">
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-528601" href="javascript:showSectionTermDescription(528601)">
+                                                                    EN.601.107(02)
+                                                                </a></span>
+                                                            
+                                                        </td><td class="label" align="left" style="width:30%;">
+                                                            <a href="https://sis.jhu.edu/sswf/SSS/ViewGradesByAP/SSS_ViewGradesByAP.aspx?MyIndex=88209#" onclick="showClassDetails(this,528601);return false;">Introductory Programming in Java [+]</a>
+                                                            <br>
+                                                            
+                                                        </td><td class="label" align="center" style="width:5%;">&nbsp;</td><td class="label" align="center" style="width:3%;">E</td><td class="label" align="left" style="width:15%;">
+                                                            
+                                                            
+                                                            A
+                                                            
+                                                            
+                                                        </td><td class="label" align="left" style="width:12%;">
+                                                            
+                                                            
+                                                            
+                                                                <span class="icon-none-16-right"><a id="section-528601-gradesystem" href="javascript:showGradeSystemDescription(528601, &#39;Letter Grade system used for course grading and used for calculating Grade Point Average in a class.&#39;)">
+                                                                    Undergrad Letter
+                                                                </a></span>
+                                                        </td><td class="label" align="right" style="width:13%;">3.00</td><td class="label" align="right" style="width:13%;">3.00</td>
+		</tr>
+	</tbody></table>
+                                        
+</div>
+                                    </td>
+                                </tr>
+                            </tbody></table>
+                            <!-- removed border style from next two tables -- style="border:1px solid;border-collapse:collapse" -->
+                            <!-- removed border style from all rows, next two tables -- style="border:1px solid;border-color:LightGrey" -->
+                            <!-- removed border style from cells for next two tables -- style="border:0.02cm outset;border-color:LightGrey" -->
+                            <!-- removed bgcolors --- bgcolor="#ffffcc" bordercolor="LightGrey" -->
+                            <div id="ctl00_contentPlaceHolder_RPStudentGrades_ctl06_pnlGradeCummData">
+	
+                                <table id="ctl00_contentPlaceHolder_RPStudentGrades_ctl06_ApCumGPA" cellspacing="0" width="95%" border="0">
+		<tbody><tr>
+			<td width="17%">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl06_LabelAPGPA" class="label" style="font-weight:bold;">Term GPA :</span>
+                                        </td>
+			<td width="30%" align="left">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl06_APGPA" class="label" style="font-weight:bold;">3.74</span>
+                                        </td>
+			<td width="27%" align="right" colspan="2" nowrap="nowrap">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl06_Label9" class="label" style="font-weight:bold;">Totals:</span>
+                                        </td>
+			<td width="13%" align="right" nowrap="nowrap">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl06_AttemptedCredits" class="label" style="display:inline-block;font-weight:bold;width:100%;">18.00</span>
+                                        </td>
+			<td width="13%" align="right" nowrap="nowrap">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl06_EarnedCredits" class="label" style="display:inline-block;font-weight:bold;width:100%;">18.00</span>
+                                        </td>
+		</tr>
+		<tr>
+			<td>
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl06_LabelCumulativeGPA" class="label" style="font-weight:bold;">Cumulative GPA: </span>
+                                        </td>
+			<td align="left">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl06_valCumulativeGPA" class="label" style="font-weight:bold;">3.74</span>
+                                        </td>
+			<td align="right" colspan="2">
+                                            
+                                        </td>
+			<td align="right" colspan="2">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl06_valCumulativeEarnedCredits" class="label" style="font-weight:bold;"></span>
+                                        </td>
+		</tr>
+		<tr>
+			<td colspan="6">
+                                            <span id="ctl00_contentPlaceHolder_RPStudentGrades_ctl06_Label1" class="label">
+												        <em>Note: Cumulative totals are as of this academic period.</em></span>
+                                        </td>
+		</tr>
+	</tbody></table>
+	
+                            
+</div>
+                            <br>
+                        
+                </td>
+            </tr>
+            <tr>
+                <td class="label">
+                    <div id="ctl00_contentPlaceHolder_pnlExternalCourses">
+	
+                        <div class="sectionHeader" style="width: 94.5%;">
+                            External Course Summary</div>
+                        <table cellspacing="0" rules="all" border="1" id="ctl00_contentPlaceHolder_dgExternalCourses" style="width:95%;border-collapse:collapse;">
+		<tbody><tr class="tableHeader" align="center">
+			<th class="tableHeader" align="center" scope="col">School Name</th><th class="tableHeader" align="center" scope="col">Course Name</th><th class="tableHeader" align="center" scope="col">Class Title</th><th class="tableHeader" align="center" scope="col">Academic<br>Period</th><th class="tableHeader" align="center" scope="col">Area</th><th class="tableHeader" align="center" scope="col">Internal<br>Course Number</th><th class="tableHeader" align="center" scope="col">Status</th><th class="tableHeader" align="center" scope="col">Credits</th>
+		</tr><tr class="tableRowOddData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:20%;">Advanced Placement Examination</td><td class="label" align="left" style="width:10%;">ECON</td><td class="label" align="left" style="width:15%;">Econ - Mac</td><td class="label" align="center" style="width:20%;">AE Fall 2017</td><td class="label" align="center" style="width:5%;">S</td><td class="label" align="center" style="width:15%;">AS.180.101</td><td class="label" align="center" style="width:5%;">Articulated</td><td class="label" align="right" style="width:5%;">3.00</td>
+		</tr><tr class="tableRowEvenData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:20%;">CUNY Herbert H Lehman College</td><td class="label" align="left" style="width:10%;">CHEM-CHE 114</td><td class="label" align="left" style="width:15%;">Essentials of General Chemistry</td><td class="label" align="center" style="width:20%;">AE Summer 2018</td><td class="label" align="center" style="width:5%;">N</td><td class="label" align="center" style="width:15%;">AS.030.101</td><td class="label" align="center" style="width:5%;">Articulated</td><td class="label" align="right" style="width:5%;">3.00</td>
+		</tr><tr class="tableRowOddData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:20%;">CUNY Herbert H Lehman College</td><td class="label" align="left" style="width:10%;">MATH-MAT 226</td><td class="label" align="left" style="width:15%;">Vector Calculus</td><td class="label" align="center" style="width:20%;">AE Summer 2018</td><td class="label" align="center" style="width:5%;">Q</td><td class="label" align="center" style="width:15%;">AS.110.202</td><td class="label" align="center" style="width:5%;">Articulated</td><td class="label" align="right" style="width:5%;">4.00</td>
+		</tr>
+	</tbody></table>
+                    
+</div>
+                </td>
+                </tr></tbody></table><table width="94%">
+                    <tbody><tr>
+                        <td width="65%" align="right" nowrap="">
+                            &nbsp;
+                        </td>
+                        <td width="25%" align="right" nowrap="">
+                            <span id="ctl00_contentPlaceHolder_lblExternalCoursesName" class="label" align="Right" style="font-weight:bold;">Totals:</span>
+                        </td>
+                        <td width="10%" align="right" nowrap="">
+                            <span id="ctl00_contentPlaceHolder_lblExternalCoursesTotal" class="label" style="display:inline-block;font-weight:bold;width:100%;">10.00</span>
+                        </td>
+                    </tr>
+                </tbody></table>
+            
+            <br>
+            <br>
+            
+                
+                    
+                        <div id="APHeader" class="sectionHeader" style="width: 94%;">
+                            <table>
+                                <tbody><tr>
+                                    <td class="subHeader">
+                                        <span>Advanced Placement Test Score(s)</span>
+                                    </td>
+                                </tr>
+                            </tbody></table>
+                        </div>
+                        <div class="inner-box">
+                            
+                        </div>
+                    <div id="ctl00_contentPlaceHolder_pnlAPGrades">
+	
+                        <table cellspacing="0" rules="all" border="1" id="ctl00_contentPlaceHolder_DGStudentAPGrades" style="width:94%;border-collapse:collapse;">
+		<tbody><tr class="tableHeader" align="center">
+			<th class="tableHeader" scope="col">Exam Title</th><th class="tableHeader" scope="col">Score</th><th class="tableHeader" scope="col">Year</th>
+		</tr><tr class="tableRowOddData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:50%;">Economics: Microeconomics</td><td class="label" align="center" style="width:24%;">4</td><td class="label" align="center" style="width:24%;">2017</td>
+		</tr><tr class="tableRowEvenData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:50%;">Calculus AB</td><td class="label" align="center" style="width:24%;">4</td><td class="label" align="center" style="width:24%;">2017</td>
+		</tr><tr class="tableRowOddData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:50%;">Physics 1</td><td class="label" align="center" style="width:24%;">4</td><td class="label" align="center" style="width:24%;">2017</td>
+		</tr><tr class="tableRowEvenData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:50%;">Economics: Macroeconomics</td><td class="label" align="center" style="width:24%;">5</td><td class="label" align="center" style="width:24%;">2017</td>
+		</tr><tr class="tableRowOddData" style="border-color:LightGrey;">
+			<td class="label" align="left" style="width:50%;">United States History</td><td class="label" align="center" style="width:24%;">4</td><td class="label" align="center" style="width:24%;">2016</td>
+		</tr>
+	</tbody></table>
+                    
+</div>
+                
+            
+        
+        <br>
+        <div id="ctl00_contentPlaceHolder_pnlCourseWaivers" style="width:95%;">
+	
+            <div class="sectionHeader">
+                Course Waivers
+            </div>
+            <table cellspacing="0" rules="all" border="1" id="ctl00_contentPlaceHolder_dgCourseWaivers" style="width:100%;border-collapse:collapse;">
+		<tbody><tr class="tableHeader" align="center">
+			<th class="tableHeader" align="center" scope="col">Class Title</th><th class="tableHeader" align="center" scope="col">Applies To</th><th class="tableHeader" align="center" scope="col">Status</th><th class="tableHeader" align="center" scope="col">Effective Date</th>
+		</tr><tr class="tableRowOddData" style="border-color:LightGrey;">
+			<td class="label" align="center" style="width:30%;">Laboratory Safety For Undergraduates</td><td class="label" align="center" style="width:15%;">Course</td><td class="label" align="center" style="width:15%;">Approved</td><td class="label" align="center" style="width:20%;">11/14/2017 3:45:04 AM</td>
+		</tr>
+	</tbody></table>
+        
+</div>
+        <br><br><br>
+        
+<input type="hidden" name="ctl00$contentPlaceHolder$hiddenIdHelper" id="ctl00_contentPlaceHolder_hiddenIdHelper">
+		 </div>
+		 <div id="footerContainer" class="Footer-logo" style="margin-bottom: 40px;">
+			<hr style="width: 99%; margin-bottom: 40px;">
+			<img src="./sisgrades_files/university.logo.small.horizontal.blue.png" alt="Johns Hopkins University Logo">
+		 </div>	 
+    
+<script type="text/javascript">sessionTimeout();</script></form>
+
+
+<div class="gpaIndicator" style="position: absolute; right: 50px; top: 110px; margin-right: 25px; margin-top: 25px; width: 100px; height: 100px; z-index: 1235421341234; color: white; font-family: arial; text-align: center; font-size: 20pt; font-weight: bold; background-color: #205081;">GPA:
+ 3.704</div></body></html>

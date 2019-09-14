@@ -1,0 +1,340 @@
+
+function showHideInlineForm(control, inLineFormID, elementToCopy, inLineFormControlSetFocus, cellsToHighlight, closeFormText, closeOnly, allowMultipleInlineForms, controlClassName, disableAnimation) {
+
+    allowMultipleInlineForms = true;
+    control.className = 'label-arrow-down';
+
+    //if an inline form has already been opened, then we get the id of the control that opened it and that controls innerHTML
+    //we use this info later in the process to reset the original control
+    if (controlThatOpenedTheForm != undefined) {
+        var originalControl = controlThatOpenedTheForm.split("^");
+        $(originalControl[0]).innerHTML = originalControl[1];
+        $(originalControl[0]).className = originalControl[2];
+    }
+
+    controlThatOpenedTheForm = control.id + "^" + control.innerHTML + "^" + controlClassName;                         //so we know the original control and its innerHTML
+
+    //cellsToHighlight is used to define specific cells to highlight in the row above the inline form
+    //if cells are not defined, then the entire row is hightlighted
+    var arrCell_indexs
+    if (cellsToHighlight != undefined) {
+        arrCell_indexs = cellsToHighlight.split(",")
+    }
+
+    //find the row within the table where the control lives
+    var row = control.parentNode.parentNode;         //get the row where the control lives
+
+    // var  rowIndex = row.rowIndex;                           //get the rows index : )
+    var tbl = row.parentNode.parentNode;               			 //once we have the row, we can get the table
+    var rowIndex = row.rowIndex; //control.id.split("_");
+
+    if ((inlineFormRow == parseInt(rowIndex) + 1) || (closeOnly == true)) {      			   //if the inLineForm is there for the link clicked then this is a close form only, otherwise it is a close form and open another form
+        deleteInlineFormRow(control, arrCell_indexs, elementToCopy.id, inLineFormID, true);       //delete the row
+        controlThatOpenedTheForm = undefined;                                      //cleanup
+        inlineFormRow = "";                                                                   //cleanup
+        return;                                                                                   //we are done cause this was a "close only" operation
+    }
+
+    //if an inline form exits delete it before opening a new form
+    if ((inlineFormRow != null) && (inlineFormRow != "") && (inlineFormRow != undefined)) {
+        if (inlineFormRow < rowIndex) {		//reset the rowIndex to account for inlineFormRow
+            rowIndex = rowIndex - 1;
+        }
+        deleteInlineFormRow(control, arrCell_indexs, elementToCopy.id, inLineFormID, false);
+    }
+
+    //set the style of the cells/row that is directly above the inline form row 
+    var rows = tbl.getElementsByTagName("tr");
+    var cells = rows[rowIndex].getElementsByTagName("td");
+
+    //this if/else is broken if cellsToHighlight parameter is not passed from onClick call
+    //FIX IT
+    if (arrCell_indexs) {
+        if (arrCell_indexs.length != 0) {                                                              //user set cells to highlight
+            for (i = 0; i <= arrCell_indexs.length - 1; i++) {
+                if(cells[arrCell_indexs[i]]){ // SELF-4625 Make sure cell exists)
+                    cells[arrCell_indexs[i]].className = "inlineForm-headerRow";
+                }
+            }
+        } else {                                                                                                  //no user set cells to highlight, so highlight the entire row
+            for (i = 0; i <= cells.length - 1; i++) {
+                if(cells[i]){ // SELF-4625 Make sure cell exists)
+                    cells[i].className = "inlineForm-headerRow";
+                }
+            }
+        }
+    }
+
+    //set the value for the row where the inline form lives
+    inlineFormRow = parseInt(rowIndex) + 1;
+
+    var newRow = tbl.insertRow(inlineFormRow);
+    newRow.id = "inLineFormRow";
+    var newCell = newRow.insertCell(0);
+    //newRow.cells[0].style.width = "100%";    doesn't work : (
+    newCell.colSpan = cells.length;
+    newCell.id = "inLineFormCell";
+    newCell.innerHTML = "<div style=\"display:none\" id=" + inLineFormID + ">text</div>"       //create this div so Position.clone has something in the new row to work with
+
+    $(inLineFormID).innerHTML = $(elementToCopy).innerHTML;
+    $(inLineFormID).className = "inlineForm-newRow";
+
+    //snl testing eye candy
+    if (!disableAnimation) {
+        if ($(inLineFormID) != null) {
+            if ($(inLineFormID).style.display == 'none') {
+                new Effect.SlideDown(
+						inLineFormID,
+							{
+							    duration: .5
+							}
+					    );
+            } else {
+                new Effect.SlideUp(
+						inLineFormID,
+							{
+							    duration: .5
+							}
+					    );
+            }
+        }
+    }
+    else {
+        if ($(inLineFormID) != null) {
+            if ($(inLineFormID).style.display == 'none') {
+                $(inLineFormID).show();
+            } else {
+                $(inLineFormID).hide();
+            }
+        }
+    }
+
+    //SNL need to fix the setfocus stuff		   
+    //  if(inLineFormControlSetFocus) {
+    //		inLineFormControlSetFocus.focus();
+    // }
+    //SNL need to fix the setfocus stuff END
+    if (closeFormText != '') {
+        control.innerHTML = "<span style=\"cursor: pointer\">" + closeFormText + "</span>";
+    }
+
+} //end function
+
+
+function deleteInlineFormRow(control, cellsToHighlight, expandFormText, inLineFormID, animateClose) {
+    var rowWhereTheControlLives = control.parentNode.parentNode;      //get the row             
+    var tbl = rowWhereTheControlLives.parentNode.parentNode;            //get the table
+
+    //get the style of the row below the row we delete so we can reset the style of the row above the row we delete : )
+    //SNL fix this > what if row we delete is the last row in the table, there is no row below to use : )
+    var rows = tbl.getElementsByTagName("tr");
+    var theRowBelow = rows[inlineFormRow - 1]; 	       	                //inlineFormRow is a global variable that is set by the initial onClick event
+    var cells = theRowBelow.getElementsByTagName("td");
+
+    //set the style of the cells above the inline form back to there original style
+    if (cellsToHighlight != undefined) {                                               //specific cells have been passed, so we work only on those
+        for (i = 0; i <= cellsToHighlight.length - 1; i++) {
+            if(cells[cellsToHighlight[i]]){ // SELF-4625 Make sure cell exists)
+                cells[cellsToHighlight[i]].className = theRowBelow.className;
+            }
+        }
+    } else {                                                                                       //no specefic cells were passed, so we work on all cells in the row
+        for (i = 0; i <= cells.length - 1; i++) {
+            if(cells[i]){ // SELF-4625 Make sure cell exists)
+                cells[i].className = theRowBelow.className;
+            }
+        }
+    }
+
+    if ((animateClose == true) && ($(inLineFormID) != null)) {
+        var tmp = inlineFormRow;
+        new Effect.SlideUp(
+					inLineFormID,
+						{
+						    duration: .5,
+						    afterFinish: function (o) { $(tbl.id).deleteRow(tmp); }
+						}
+
+				);
+    } else {
+        $(tbl.id).deleteRow(inlineFormRow);
+    }
+}
+
+
+//old school, show/hide an image that is associated with the element
+function showHideProgressIndicator(control, action, changeText, customTimeout) {
+    var progressIMG = control.id + "_progressIndicator";
+    if (action == "show") {                                    	//show progress indicator
+        $(progressIMG).style.visibility = 'visible';
+        if (changeText) {
+            setControlText(control, changeText);
+        }
+    } else if (action == "timed") {    				//show progress indicator for a period of time
+        $(progressIMG).style.visibility = 'visible';
+        var orgText = control.innerHTML;
+        if (changeText) {
+            setControlText(control, changeText);
+        }
+		// ISIS-263: jcooke9: 7/6/11: added customTimeout param and if not passed, using 5 secs as the default
+		var timeout;
+		if( (customTimeout == undefined) || (customTimeout == null) ) {
+			timeout = 5000;
+		} else {
+			timeout = customTimeout;
+		}
+        var t = setTimeout(function () { hideControlStop(control.id, orgText); }, timeout);
+    } else if (action == "hide") {                              //hide progress indicator
+        $(progressIMG).style.visibility = 'hidden';
+    } else {
+        $(progressIMG).style.visibility = 'hidden';
+    }
+}
+
+//replaces showHideProgressIndicator using className instead of associated image
+function showHideProgressViaClassName(el, action, changeText, nonProgressStyle, customSpinnerClass, customTimeout) {
+    if (nonProgressStyle == null) { nonProgressStyle = 'label-emptyIcon-postiion'; }
+    var spinnerClass;
+    if (customSpinnerClass == undefined || customSpinnerClass == null) { spinnerClass = 'label-spinner'; } else { spinnerClass = customSpinnerClass; }
+    if (action == "show") {
+        $(el).className = spinnerClass;
+        if (changeText) {
+            setControlText(el, changeText);
+        }
+    } else if (action == "timed") {    				//show progress indicator for a period of time
+        var orgText = el.innerHTML;
+        var orgClassName = $(el).className;
+        $(el).className = spinnerClass;
+        if (changeText) {
+            setControlText(el, changeText);
+        }
+		// ISIS-263: jcooke9: 7/6/11: added customTimeout param and if not passed, using 5 secs as the default
+		var timeout;
+		if( (customTimeout == undefined) || (customTimeout == null) ) {
+			timeout = 5000;
+		} else {
+			timeout = customTimeout;
+		}
+        var t = setTimeout(function () { hideControlStop(el.id, orgText, orgClassName); }, timeout);
+    } else if (action == "hide") {                              //assign element non progress indicator className
+        $(el).className = nonProgressStyle;
+    } else {
+        $(el).className = nonProgressStyle;
+    }
+}
+
+//change text of a control for a period of time in millisecond
+function changeElemInnerHTMLTimed(element, changeText, time) {
+    var orgText = element.innerHTML;
+    setControlText(element, changeText);
+    var t = setTimeout(function () { hideControlStop(element.id, orgText); }, time);
+}
+
+//used by showHideProgressIndicator()
+function hideControlStop(elID, orgText, orgClassName) {
+    var progressIMG = elID + "_progressIndicator";
+    if (orgClassName != null) { $(elID).className = orgClassName; }
+    if ($(progressIMG)) {
+        $(progressIMG).style.visibility = 'hidden';
+    }
+    setControlText($(elID), orgText);
+}
+
+//used by showHideProgressIndicator() and hideControlStop()
+function setControlText(control, text) {
+    switch (control.tagName) {
+        case "SELECT":                          	//dropdown list, dont set text, need to look at this some more
+            break;
+        case "A":                               	//hyper link, future disable link via href attribute (need to remember orig url)
+            control.innerHTML = text;
+            break;
+        case "INPUT":                           	//submit button
+            control.value = text;
+            control.disabled = true;
+            break;
+    }
+}
+
+//  Recycles a single window
+var showWin = new function () {
+    var toPos = function (arr) {
+        return {
+            left: arr[0],
+            top: arr[1]
+        };
+    };
+    var defer = function (fun) {
+        var t = setTimeout(fun, 0);
+    };
+    var lazy = function (gen) {
+        var obj = null;
+        return function () {
+            if (!obj) obj = { val: gen() };
+            return obj.val;
+        };
+    };
+    var win = lazy(function () {
+        var win = new Window({
+            title: null,
+            width: 0, height: 0,
+            left: 0, top: 0,
+            className: "bluelighting",
+            resizable: false,
+            minimizable: false,
+            maximizable: false,
+            draggable: true,
+            wiredDrag: false,
+            showEffect: Element.show,
+            hideEffect: Element.hide
+        });
+        return win;
+    });
+    var fun = function (opt) {
+        var width = opt.width || 0;
+        var height = opt.height || 0;
+        var top = opt.top || 0;
+        var left = opt.left || 0;
+        var elem = $(opt.offsetElement);
+        var showcenter = opt.showcenter || false;
+        var modal = opt.showmodal || false;
+        var centertop = opt.centertop;
+        var centerleft = opt.centerleft;
+
+        var corn = !opt.offsetCorner
+			? { x: "left", y: "top" }
+			: { x: opt.offsetCorner.x == "right" ? "right" : "left", y: opt.offsetCorner.y == "bottom" ? "bottom" : "top" }
+
+        if (elem) {
+            var dim = elem.getDimensions();
+            var loc = toPos(Position.cumulativeOffset(elem));
+            top += loc.top;
+            left += loc.left;
+            if (corn.x == "right") {
+                left += dim.width;
+            }
+            if (corn.y == "bottom") {
+                top += dim.height;
+            }
+        }
+        opt.content = opt.content;
+        win().setHTMLContent(opt.content);
+        win().setTitle(opt.title);
+        win().setSize(width, height);
+        if (showcenter) {
+            win().showCenter(modal, centertop, centerleft);
+        }
+        else {
+            win().setLocation(top, left);
+            win().show();
+        }
+        if (!height) {
+            defer(function () {
+                win().updateHeight();
+            });
+        };
+    };
+    fun.win = win;
+    return fun;
+};
+
+
