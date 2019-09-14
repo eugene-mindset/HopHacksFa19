@@ -5,7 +5,7 @@ from auth import api_key
 
 def check_cs_minor(student_courses):
     courses_left = []
-    if 'EN.500.112' not in student_courses and 'EN.601.107':
+    if 'EN.500.112' not in student_courses and 'EN.601.107' not in student_courses:
         courses_left.append('EN.500.112 - Gateway Computing: Java')
     if 'EN.601.220' not in student_courses:
         courses_left.append('EN.601.220 - Intermediate Programming')
