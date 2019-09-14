@@ -1,5 +1,6 @@
 from pathlib import Path
 from csminor import check_cs_minor
+from africanaminor import check_as_minor
 from get_courses import generate_courses_file
 
 option = input("Update courses listings? (Y/N): ")
@@ -14,5 +15,8 @@ user_courses = course_file.readlines()
 user_courses = [course.strip() for course in user_courses]
 
 cs_minor_courses_left = check_cs_minor(user_courses)
+as_minor_courses_left = check_as_minor(user_courses)
 
 print(cs_minor_courses_left)
+
+print(as_minor_courses_left)
