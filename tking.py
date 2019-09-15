@@ -3,6 +3,7 @@ from tkinter import messagebox
 from tkinter.font import Font
 from tkinter.scrolledtext import ScrolledText
 import re
+from majors_minors import degree_calculations
 
 def rgb_to_hex(r, g, b):
     return '#' + ''.join('{:02X}'.format(x) for x in [r, g, b])
@@ -180,6 +181,7 @@ class App:
         print(class_inputs)
 
         # fire function for calculations
+        text_o = degree_calculations(class_inputs)
 
         return class_inputs
 
