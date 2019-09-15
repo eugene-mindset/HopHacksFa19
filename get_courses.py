@@ -52,16 +52,18 @@ def get_semester_classes(school, department, semester):
 def generate_courses_file():
     whiting = 'Whiting School of Engineering'
     krieger = 'Krieger School of Arts and Sciences'
-    semesters = ['Fall 2019', 'Spring 2019', 'Fall 2018', 'Spring 2018', 'Fall 2017', 'Spring 2017', 'Fall 2016']
+    #semesters = ['Fall 2019', 'Spring 2019', 'Fall 2018', 'Spring 2018', 'Fall 2017', 'Spring 2017', 'Fall 2016']
+    semesters = ['Fall 2019', 'Spring 2019', 'Fall 2018', 'Spring 2018', 'Fall 2017']
     all_courses = {}
 
     #whiting_departments = get_whiting_departments()
     whiting_departments = get_school_departments(whiting)
     #krieger_departments = get_krieger_departments()
-
     krieger_departments = get_school_departments(krieger)
+
     # Apostrophe in name messes up API calls, no one is even in this department anyway
     krieger_departments.remove("AS Dean's Teaching Fellowship Courses")
+    whiting_departments.remove("AS Dean's Teaching Fellowship Courses")
 
     for department in whiting_departments:
         for semester in semesters:
