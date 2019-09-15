@@ -167,23 +167,10 @@ class App:
             sem_courses = re.split(",|,\n|, |\n| ", self.semester_entries[semester]['entry'].get().strip())
             class_inputs = class_inputs + sem_courses
 
-        text_o = ""
-
-        for course in class_inputs:
-            if course == "":
-                class_inputs.remove(course)
-
-        for course in class_inputs:
-            text_o += course + "\n"
-
-        self.out_label.config(text=text_o)
-
-        print(class_inputs)
-
         # fire function for calculations
         text_o = degree_calculations(class_inputs)
 
-        return class_inputs
+        self.out_label.config(text=text_o)
 
     def return_back(self):
         for semester in self.semester_entries:

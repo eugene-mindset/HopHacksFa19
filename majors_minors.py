@@ -38,9 +38,9 @@ def degree_calculations(user_courses):
     degree_suggestions = ''
 
     for i in range(3):
-        degree_suggestions += f'You are {len(minors[i][1])} course(s) away from a {minors[i][0]} minor!'
+        degree_suggestions += f'You are {len(minors[i][1])} course(s) away from a {minors[i][0]} minor!\n'
         degree_suggestions += ', '.join(minors[i][1])
-        degree_suggestions += '\n'
+        degree_suggestions += '\n\n'
 
     '''
     cs_minor_courses_left = check_cs_minor(user_courses)
