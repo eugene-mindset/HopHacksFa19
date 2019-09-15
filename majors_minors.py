@@ -29,6 +29,7 @@ minors.append(('Africana Studies', check_as_minor(user_courses)))
 minors.append(('Anthropolgy', check_anthro_minor(user_courses)))
 minors.append(('Physics', check_physics_minor(user_courses)))
 minors.append(('Computer Integrated Surgery', check_cis_minor(user_courses)))
+minors.append(('Psychology', check_psych_minor(user_courses)))
 
 # Sort list of possible minors by number of courses needed
 minors = sorted(minors, key=lambda tup : len(tup[1]))
@@ -36,7 +37,7 @@ minors = sorted(minors, key=lambda tup : len(tup[1]))
 for i in range(3):
     print(f'You are {len(minors[i][1])} course(s) away from a {minors[i][0]} minor!')
 
-
+'''
 cs_minor_courses_left = check_cs_minor(user_courses)
 as_minor_courses_left = check_as_minor(user_courses)
 anthro_minor_courses_left = check_anthro_minor(user_courses)
@@ -50,3 +51,4 @@ print(anthro_minor_courses_left)
 print(physics_minor_courses_left)
 print(cis_minor_courses_left)
 print(psych_minor_courses_left)
+'''
