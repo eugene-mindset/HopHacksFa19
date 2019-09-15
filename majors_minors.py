@@ -3,6 +3,7 @@ from csminor import check_cs_minor
 from africanaminor import check_as_minor
 from anthrominor import check_anthro_minor
 from physicsminor import check_physics_minor
+from cisminor import check_cis_minor
 from get_courses import generate_courses_file
 
 option = input("Update courses listings? (Y/N): ")
@@ -19,11 +20,10 @@ cs_minor_courses_left = check_cs_minor(user_courses)
 as_minor_courses_left = check_as_minor(user_courses)
 anthro_minor_courses_left = check_anthro_minor(user_courses)
 physics_minor_courses_left = check_physics_minor(user_courses)
+cis_minor_courses_left = check_cis_minor(user_courses)
 
 print(cs_minor_courses_left)
-
 print(as_minor_courses_left)
-
 print(anthro_minor_courses_left)
-
 print(physics_minor_courses_left)
+print(cis_minor_courses_left)
