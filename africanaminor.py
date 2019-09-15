@@ -23,11 +23,11 @@ def check_as_minor(student_courses):
                 string += 'AS.362.112 - Introduction to Africana Studies'
             if 'AS.100.122' in missing_class:
                 if string:
-                    string += ' or '
+                    string += ' OR '
                 string += 'AS.100.122 - Introduction to History of Africa (since 1880)'
             if 'AS.100.123' in missing_class:
                 if string:
-                    string += ' or '
+                    string += ' OR '
                 string += 'Introduction to African History: Diversity, Mobility, Innovation'
             courses_left.append(string)
             string = ''

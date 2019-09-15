@@ -27,19 +27,19 @@ def check_psych_minor(student_courses):
                 string += 'AS.200.101 - Introduction to Psychology'
             if 'AS.200.110' in missing_class:
                 if string:
-                    string += ' or '
+                    string += ' OR '
                 string += 'AS.200.110 - Introduction to Cognitive Psychology'
             if 'AS.200.132' in missing_class:
                 if string:
-                    string += ' or '
+                    string += ' OR '
                 string += 'AS.200.132 - Introduction to Developmental Psychology'
             if 'AS.200.133' in missing_class:
                 if string:
-                    string += ' or '
+                    string += ' OR '
                 string += 'AS.200.133 - Introduction to Social Psychology'
             if 'AS.200.141' in missing_class:
                 if string:
-                    string += ' or '
+                    string += ' OR '
                 string += 'AS.200.141 - Foundations of Brain, Behavior and Cognition'
             courses_left.append(string)
             string = ''

@@ -5,9 +5,9 @@ from auth import api_key
 
 def check_classics_minor(student_courses):
     courses_left = []
-    classics = [course for course in student_courses if course.startswith('AS.040')]
+    classics = [course for course in student_courses if course.startswith('AS.040.')]
     if len(classics) < 6:
         for i in range(6 - len(classics)):
-            courses_left.append('Classics course')
+            courses_left.append('Classics Department course')
 
     return courses_left
