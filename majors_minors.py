@@ -6,14 +6,12 @@ from physicsminor import check_physics_minor
 from cisminor import check_cis_minor
 from psychminor import check_psych_minor
 from get_courses import generate_courses_file
+from classics_minor import check_classics_minor
+#from bioethics_minor import check_bioethics_minor
+from econ_minor import check_econ_minor
 
 def print_required_courses(courses_left):
     pass
-
-# Update json file with all courses if there have been some changes
-option = input("Update courses listings? (Y/N): ")
-if option == 'Y':
-    generate_courses_file()
 
 # Parse file to get list of courses student has taken
 course_file_name = input("Enter course file name: ")
@@ -30,12 +28,17 @@ minors.append(('Anthropolgy', check_anthro_minor(user_courses)))
 minors.append(('Physics', check_physics_minor(user_courses)))
 minors.append(('Computer Integrated Surgery', check_cis_minor(user_courses)))
 minors.append(('Psychology', check_psych_minor(user_courses)))
+minors.append(('Classics', check_classics_minor(user_courses)))
+#minors.append(('Bioethics', check_bioethics_minor(user_courses)))
+minors.append(('Economics', check_econ_minor(user_courses)))
 
 # Sort list of possible minors by number of courses needed
 minors = sorted(minors, key=lambda tup : len(tup[1]))
 
 for i in range(3):
     print(f'You are {len(minors[i][1])} course(s) away from a {minors[i][0]} minor!')
+    courses_to_take = ', '.join(minors[i][1])
+    print(courses_to_take)
 
 '''
 cs_minor_courses_left = check_cs_minor(user_courses)

@@ -79,3 +79,9 @@ def generate_courses_file():
 
     with open('all_courses.json', 'w') as fp:
         json.dump(all_courses, fp)
+
+def main():
+    generate_courses_file()
+
+if __name__ == "__main__":
+    main()
