@@ -5,22 +5,32 @@ from auth import api_key
 
 def check_as_minor(student_courses):
     courses_left = []
-    missing_class = []
+    missing_class = ['AS.362.112', 'AS.100.122', 'AS.100.123']
 
-    if 'AS.362.112' not in student_courses:
-        missing_class.append('AS.362.112')
-    if 'AS.100.122' not in student_courses:
-        missing_class.append('AS.100.122')
-    if 'AS.100.123' not in student_courses:
-        missing_class.append('AS.100.123')
+    if 'AS.362.112' in student_courses:
+        missing_class.remove('AS.362.112')
+    if 'AS.100.122' in student_courses:
+        missing_class.remove('AS.100.122')
+    if 'AS.100.123' in student_courses:
+        missing_class.remove('AS.100.123')
 
-    if (3 - len(missing_class) < 1):
-        if 'AS.362.112' in missing_class:
-            courses_left.append('AS.362.112 - Introduction to Africana Studies')
-        if 'AS.100.122' in missing_class:
-            courses_left.append('AS.100.122 - Introduction to History of Africa (since 1880)')
-        if 'AS.100.123' in missing_class:
-            courses_left.append('Introduction to African History: Diversity, Mobility, Innovation')
+    string = ''
+
+    if (len(missing_class) > 1):
+        for i in range(len(missing_class)):
+
+            if 'AS.362.112' in missing_class:
+                string += 'AS.362.112 - Introduction to Africana Studies'
+            if 'AS.100.122' in missing_class:
+                if string:
+                    string += ' or '
+                string += 'AS.100.122 - Introduction to History of Africa (since 1880)'
+            if 'AS.100.123' in missing_class:
+                if string:
+                    string += ' or '
+                string += 'Introduction to African History: Diversity, Mobility, Innovation'
+            courses_left.append(string)
+            string = ''
 
     as_uppers = [course for course in student_courses if course.startswith('AS.362.3')
         or course.startswith('AS.362.4') or course.startswith('AS.362.5') or course.startswith('AS.362.6')]
