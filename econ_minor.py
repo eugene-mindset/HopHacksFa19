@@ -5,7 +5,7 @@ from auth import api_key
 
 def check_econ_minor(student_courses):
     courses_left = []
-    ams_
+    
     if 'AS.180.101'  not in student_courses :
         courses_left.append('EN.660.105 - Introduction to Business')
     if 'AS.180.102' not in student_courses:
