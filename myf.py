@@ -1,0 +1,2 @@
+def myf():
+    print('Hello')

@@ -10,13 +10,13 @@ def check_cis_minor(student_courses):
     if 'EN.601.226' not in student_courses:
         courses_left.append('EN.601.226 - Data Structures')
     if 'AS.110.106' not in student_courses and 'AS.110.108' not in student_courses:
-        courses_left.append(('AS.110.106 - Calculus I (Biology and Social Sciences)', 'AS.110.108 - Calculus I'))
+        courses_left.append('AS.110.106 - Calculus I (Biology and Social Sciences) OR AS.110.108 - Calculus I')
     if 'AS.110.107' not in student_courses and 'AS.110.109' not in student_courses:
-        courses_left.append(('AS.110.107 - Calculus II (For Biological and Social Science)', 'AS.110.109 - Calculus II (For Physical Sciences and Engineering)'))
+        courses_left.append('AS.110.107 - Calculus II (For Biological and Social Science) OR AS.110.109 - Calculus II (For Physical Sciences and Engineering)')
     if 'AS.110.202' not in student_courses and 'AS.110.211' not in student_courses:
-        courses_left.append(('AS.110.202 - Calculus III', 'AS.110.211 - Honors Multivariable Calculus'))
+        courses_left.append('AS.110.202 - Calculus III OR AS.110.211 - Honors Multivariable Calculus')
     if 'EN.553.291' not in student_courses and 'AS.110.201' not in student_courses and 'AS.110.212' not in student_courses:
-        courses_left.append(('AS.110.201 - Linear Algebra', 'EN.553.291 - Linear Algebra and Differential Equations', 'AS.110.212 - Honors Linear Algebra'))
+        courses_left.append('AS.110.201 - Linear Algebra OR EN.553.291 - Linear Algebra and Differential Equations OR AS.110.212 - Honors Linear Algebra')
     if 'EN.601.455' not in student_courses:
         courses_left.append('EN.601.455 - Computer Integrated Surgery I')
     if 'EN.601.456' not in student_courses:
